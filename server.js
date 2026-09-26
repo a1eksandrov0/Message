@@ -6,7 +6,8 @@ const crypto = require("crypto");
 const app = express();
 app.use(express.json());
 
-const DB_FILE = path.join(__dirname, "users.json");
+const ROOT = __dirname;
+const DB_FILE = path.join(ROOT, "users.json");
 
 function loadUsers() {
   if (!fs.existsSync(DB_FILE)) return {};
@@ -65,10 +66,20 @@ app.post("/api/login", (req, res) => {
 
 // --- Фронтенд ---
 
-app.use(express.static(__dirname));
-
+// Отдаём index.html на любой путь, где нет API
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(ROOT, "index.html"));
+});
+
+app.get("/index.html", (req, res) => {
+  res.sendFile(path.join(ROOT, "index.html"));
+});
+
+app.use(express.static(ROOT));
+
+// Если ничего не совпало — отдаём index.html (чтобы не было "Cannot GET /")
+app.use((req, res) => {
+  res.sendFile(path.join(ROOT, "index.html"));
 });
 
 // --- Запуск ---
