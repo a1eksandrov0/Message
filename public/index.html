@@ -19,7 +19,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Анимированный переливающийся градиент Apple для фона авторизации */
+    /* Градиент для фона авторизации */
     @keyframes imessageBgGradient {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -32,7 +32,46 @@
       animation: imessageBgGradient 12s ease infinite;
     }
 
-    /* Классический синий цвет iMessage для отправленных сообщений */
+    /* Эффект жидкого стекла (Liquid Glass) для плашек ID */
+    .glass-badge {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 4px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      font-size: 0.875rem;
+      display: inline-flex;
+      items-center: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Синее жидкое стекло (Мой ID) */
+    .glass-blue {
+      background: linear-gradient(135deg, rgba(0, 122, 255, 0.4), rgba(0, 86, 198, 0.2));
+      border: 1px solid rgba(0, 122, 255, 0.5);
+      color: #38bdf8;
+      box-shadow: 0 0 12px rgba(0, 122, 255, 0.25);
+    }
+
+    /* Зелёное жидкое стекло (Онлайн) */
+    .glass-green {
+      background: linear-gradient(135deg, rgba(52, 199, 89, 0.35), rgba(40, 156, 68, 0.15));
+      border: 1px solid rgba(52, 199, 89, 0.5);
+      color: #4ade80;
+      box-shadow: 0 0 12px rgba(52, 199, 89, 0.25);
+    }
+
+    /* Серое жидкое стекло (Офлайн) */
+    .glass-gray {
+      background: linear-gradient(135deg, rgba(142, 142, 147, 0.25), rgba(99, 99, 102, 0.1));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #9ca3af;
+    }
+
+    /* Классический синий баббл iMessage */
     .imessage-blue {
       background-color: #007aff;
       color: #ffffff;
@@ -55,7 +94,7 @@
 </head>
 <body class="h-screen flex items-center justify-center p-4 overflow-hidden relative select-none">
 
-  <!-- Главный экран с живым переливающимся фоном iMessage -->
+  <!-- Главный экран авторизации -->
   <div id="landing-screen" class="fixed inset-0 imessage-animated-bg flex flex-col items-center justify-center z-10 p-4">
     <div class="flex flex-col items-center justify-center max-w-xl text-center space-y-4">
       <h1 class="text-7xl md:text-8xl font-bold tracking-tight text-white leading-none drop-shadow-lg">Message</h1>
@@ -97,17 +136,17 @@
     <div class="w-1/3 border-r border-white/10 p-4 flex flex-col justify-between bg-[#121214]">
       <div class="flex flex-col h-full overflow-hidden">
         
-        <!-- Монолитный блок с Моим ID -->
+        <!-- Плашка Мой ID в стиле Жидкого Стекла -->
         <div class="flex items-center gap-2 mb-4 flex-shrink-0">
-          <span class="text-xs font-semibold text-gray-400 tracking-wider uppercase">Мой ID:</span>
-          <span id="my-id-display" class="font-mono bg-white/10 text-white px-2.5 py-1 rounded-lg text-sm font-bold border border-white/10">------</span>
+          <span class="text-xs font-semibold text-gray-400 tracking-wider uppercase">МОЙ ID:</span>
+          <span id="my-id-display" class="glass-badge glass-blue">------</span>
         </div>
         
         <h2 class="text-3xl font-bold text-white mb-4 flex-shrink-0 tracking-tight">Message</h2>
         
-        <!-- Поле и кнопка открытия нового чата -->
+        <!-- Поле и кнопка открытия нового чата с плейсхолдером "Поиск ID" -->
         <div class="space-y-2.5 mb-4 flex-shrink-0">
-          <input id="target-id" type="text" maxlength="6" placeholder="ID собеседника..." class="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm focus:outline-none focus:border-[#007aff] font-mono text-white">
+          <input id="target-id" type="text" maxlength="6" placeholder="Поиск ID" class="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm focus:outline-none focus:border-[#007aff] font-mono text-white placeholder-gray-500">
           <button onclick="handleManualStartChat()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white text-sm py-2.5 rounded-xl transition font-medium">Открыть чат</button>
         </div>
 
@@ -123,17 +162,21 @@
 
     <!-- Область диалога -->
     <div class="w-2/3 flex flex-col justify-between bg-black">
-      <div class="p-4 border-b border-white/10 bg-[#121214] flex items-center">
-        <span class="text-sm font-medium text-gray-400">Собеседник: </span>
-        <span id="active-chat-id" class="ml-2 font-mono font-bold text-white">Не выбран</span>
+      <!-- Шапка диалога с рамкой жидкого стекла для собеседника -->
+      <div class="p-4 border-b border-white/10 bg-[#121214] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-400">Собеседник:</span>
+          <span id="active-chat-id" class="glass-badge glass-gray">Не выбран</span>
+        </div>
       </div>
 
       <div id="messages-container" class="p-4 overflow-y-auto flex-1 space-y-2">
         <div class="text-center text-gray-500 text-sm mt-10">Выберите диалог слева или введите ID собеседника</div>
       </div>
 
+      <!-- Поле ввода с надписью "Текстовое сообщение" -->
       <div class="p-4 border-t border-white/10 bg-[#121214] flex gap-2 items-center">
-        <input id="message-input" type="text" placeholder="iMessage" class="flex-1 px-4 py-2.5 rounded-full border border-white/20 bg-white/5 focus:outline-none focus:border-[#007aff] text-sm text-white placeholder-gray-500" onkeypress="if(event.key === 'Enter') sendMessage()">
+        <input id="message-input" type="text" placeholder="Текстовое сообщение" class="flex-1 px-4 py-2.5 rounded-full border border-white/20 bg-white/5 focus:outline-none focus:border-[#007aff] text-sm text-white placeholder-gray-500" onkeypress="if(event.key === 'Enter') sendMessage()">
         <button onclick="sendMessage()" class="bg-[#007aff] hover:bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium transition flex items-center justify-center">Отправить</button>
       </div>
     </div>
@@ -144,7 +187,9 @@
     let myId = null;
     let currentChatId = null;
     
+    // Хранение данных чатов и онлайн-пользователей
     const activeChats = {};
+    const onlineUsers = new Set();
 
     function showAuthModal() {
       document.getElementById('auth-modal').classList.remove('hidden');
@@ -248,7 +293,9 @@
 
     async function openChatWith(targetId) {
       currentChatId = targetId;
-      document.getElementById('active-chat-id').innerText = currentChatId;
+      
+      // Обновляем плашку ID собеседника с учётом статуса Онлайн/Офлайн
+      updatePartnerBadgeStatus();
 
       if (!activeChats[targetId]) {
         activeChats[targetId] = { unread: false, lastText: '' };
@@ -262,6 +309,25 @@
       const messages = await res.json();
 
       renderMessages(messages || []);
+    }
+
+    // Обновление рамки жидкого стекла собеседника (Зелёная/Серая)
+    function updatePartnerBadgeStatus() {
+      const badge = document.getElementById('active-chat-id');
+      if (!currentChatId) {
+        badge.innerText = 'Не выбран';
+        badge.className = 'glass-badge glass-gray';
+        return;
+      }
+
+      badge.innerText = currentChatId;
+      const isOnline = onlineUsers.has(currentChatId);
+
+      if (isOnline) {
+        badge.className = 'glass-badge glass-green';
+      } else {
+        badge.className = 'glass-badge glass-gray';
+      }
     }
 
     function renderRecentChatsList() {
@@ -321,7 +387,8 @@
       }
 
       if (targetId === currentChatId) {
-        addSingleMessageUI(msg, true, 'Доставлено');
+        const isOnline = onlineUsers.has(targetId);
+        addSingleMessageUI(msg, true, isOnline ? 'Прочитано' : 'Доставлено');
       }
       
       renderRecentChatsList();
@@ -345,14 +412,31 @@
       renderRecentChatsList();
     });
 
+    // Обработка онлайн-статусов
+    socket.on('user_online_status', ({ userId, isOnline }) => {
+      if (isOnline) {
+        onlineUsers.add(userId);
+      } else {
+        onlineUsers.delete(userId);
+      }
+      if (userId === currentChatId) {
+        updatePartnerBadgeStatus();
+      }
+    });
+
+    // Рендеринг истории сообщений с сохранением меток "Прочитано" / "Доставлено"
     function renderMessages(messages) {
       const container = document.getElementById('messages-container');
       container.innerHTML = '';
 
+      const isPartnerOnline = onlineUsers.has(currentChatId);
+
       messages.forEach((msg, index) => {
         const isMe = msg.sender_id === myId;
         const isLast = index === messages.length - 1;
-        const status = (isMe && isLast) ? 'Прочитано' : null;
+        
+        // Метка сохраняется навсегда: если собеседник онлайн — Прочитано, иначе Доставлено
+        const status = (isMe && isLast) ? (isPartnerOnline ? 'Прочитано' : 'Доставлено') : null;
         addSingleMessageUI(msg, isMe, status);
       });
     }
