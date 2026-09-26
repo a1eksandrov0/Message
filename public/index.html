@@ -63,7 +63,6 @@
   button { cursor: pointer; border: 0; background: transparent; }
   textarea { font-family: inherit; }
 
-  /* фон авторизации */
   .auth-bg { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: var(--bg-2); }
   .auth-bg .blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.85; will-change: transform, opacity; }
   .auth-bg .b1 { width: 65vmax; height: 65vmax; top: -22vmax; left: -18vmax;
@@ -87,7 +86,6 @@
   .screen { position: fixed; inset: 0; display: none; }
   .screen.active { display: flex; }
 
-  /* auth */
   #auth-screen { align-items: center; justify-content: center; padding: 24px; }
   .auth-card {
     position: relative; width: min(100%, 400px);
@@ -179,7 +177,6 @@
     border-color: rgba(48,209,88,0.25); background: rgba(48,209,88,0.10); color: #3ddb6b;
   }
 
-  /* main */
   #main-screen { flex-direction: row; height: 100dvh; width: 100vw; overflow: hidden; background: var(--bg); }
   .sidebar {
     width: var(--sidebar-w); flex: 0 0 var(--sidebar-w);
@@ -250,9 +247,7 @@
     user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.20);
     text-transform: uppercase;
   }
-  .avatar-fav {
-    background: linear-gradient(135deg, #ff9f0a, #ffd60a) !important;
-  }
+  .avatar-fav { background: linear-gradient(135deg, #ff9f0a, #ffd60a) !important; }
   .avatar-fav svg { width: 22px; height: 22px; color: #fff; }
   .chat-info { flex: 1; min-width: 0; }
   .chat-name {
@@ -264,7 +259,6 @@
   .chat-time { font-size: 12px; color: var(--text-2); }
   .empty { padding: 60px 24px; text-align: center; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
 
-  /* chat pane */
   .chat-pane { flex: 1; display: flex; flex-direction: column; min-width: 0;
     background: var(--bg); position: relative; overflow: hidden;
     transition: background 0.35s var(--ease); }
@@ -289,20 +283,40 @@
   }
 
   .messages { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    padding: 20px 22px; display: flex; flex-direction: column; gap: 3px; scroll-behavior: smooth; }
+    padding: 16px 14px; display: flex; flex-direction: column; gap: 2px;
+    scroll-behavior: smooth; align-items: stretch; }
   .messages::-webkit-scrollbar { width: 0; }
-  .msg-row { display: flex; justify-content: flex-start; padding: 1px 4px; animation: msg-in 0.22s var(--ease); position: relative; }
+
+  .msg-row {
+    display: flex; justify-content: flex-start;
+    padding: 1px 4px; animation: msg-in 0.22s var(--ease);
+    position: relative; max-width: 100%;
+  }
   .msg-row.me { justify-content: flex-end; }
   .msg-row.removing { animation: msg-out 0.28s var(--ease) forwards; }
 
-  /* Уменьшенные размеры сообщений */
-  .bubble-wrap { max-width: 55%; display: flex; flex-direction: column; align-items: flex-start; }
+  .bubble-wrap {
+    max-width: 60%;
+    display: flex; flex-direction: column;
+    align-items: flex-start;
+    width: fit-content;
+  }
   .msg-row.me .bubble-wrap { align-items: flex-end; }
+
   .bubble {
-    padding: 7px 13px; border-radius: 18px;
-    font-size: 14.5px; line-height: 1.3;
-    word-wrap: break-word; word-break: break-word; white-space: pre-wrap;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15); position: relative; cursor: default;
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.28;
+    width: fit-content;
+    max-width: 100%;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    position: relative;
+    cursor: default;
+    display: inline-block;
   }
   .msg-row:not(.me) .bubble { background: var(--bubble-other); color: var(--bubble-other-text); border-bottom-left-radius: 5px; }
   .msg-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 5px;
@@ -325,7 +339,7 @@
   .msg-row:not(.me) .bubble-quote { border-left-color: var(--blue); }
 
   .bubble-meta {
-    display: flex; align-items: center; gap: 6px; margin-top: 3px;
+    display: flex; align-items: center; gap: 6px; margin-top: 2px;
     font-size: 11px; color: var(--text-2);
   }
   .bubble-meta .edited { font-style: italic; opacity: 0.8; }
@@ -335,21 +349,20 @@
 
   .msg-time {
     font-size: 11.5px; color: var(--text-2); text-align: center;
-    margin: 16px 0 8px; font-weight: 500; letter-spacing: 0.02em;
+    margin: 14px 0 6px; font-weight: 500; letter-spacing: 0.02em;
   }
   .msg-time b { font-weight: 600; color: var(--text-3); }
 
-  /* composer */
   .composer {
     flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px;
-    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--separator);
     background: var(--nav-blur);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
   }
   .composer-input {
-    flex: 1; min-height: 36px; max-height: 160px; padding: 8px 14px;
+    flex: 1; min-height: 36px; max-height: 140px; padding: 8px 14px;
     border: 1px solid var(--separator); border-radius: 18px;
     background: var(--input-bg); color: var(--text); outline: none;
     font-size: 15.5px; line-height: 1.35; resize: none;
@@ -373,7 +386,7 @@
     display: none;
     align-items: center;
     gap: 10px;
-    margin: 8px 18px 0;
+    margin: 8px 14px 0;
     padding: 8px 12px;
     border-radius: 12px;
     background: var(--input-bg);
@@ -403,7 +416,6 @@
   .pane-empty h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
   .pane-empty p { margin: 0; font-size: 14px; line-height: 1.45; }
 
-  /* sheets */
   .sheet-backdrop {
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -469,7 +481,6 @@
   .seg[data-active="dark"]::before { transform: translateX(100%); }
   .seg[data-active="light"]::before { transform: translateX(0); }
 
-  /* context menu */
   .ctx-menu {
     position: fixed; z-index: 200; min-width: 220px;
     background: var(--context-bg);
@@ -497,7 +508,6 @@
 
   .edit-sheet textarea.sheet-input { resize: vertical; min-height: 100px; padding: 12px 14px; height: auto; text-align: left; }
 
-  /* анимации */
   @keyframes card-in { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
   @keyframes msg-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes msg-out { to { opacity: 0; transform: scale(0.7) translateY(-10px); max-height: 0; padding: 0; margin: 0; } }
@@ -533,7 +543,9 @@
     #main-screen.chat-open .chat-pane { transform: translateX(0); }
     .back-btn { display: grid; }
     .bubble-wrap { max-width: 74%; }
+    .bubble { font-size: 15.5px; padding: 6px 12px; border-radius: 18px; }
     .sidebar-header { padding-top: 16px; }
+    .messages { padding: 14px 10px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -548,7 +560,6 @@
   <div class="blob b3"></div>
 </div>
 
-<!-- ================= АВТОРИЗАЦИЯ ================= -->
 <div class="screen active" id="auth-screen">
   <div class="auth-card">
     <h1 class="auth-brand">message</h1>
@@ -596,7 +607,6 @@
   </div>
 </div>
 
-<!-- ================= MAIN ================= -->
 <div class="screen" id="main-screen">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -662,7 +672,6 @@
   </section>
 </div>
 
-<!-- ================= NEW CHAT ================= -->
 <div class="sheet-backdrop" id="new-chat-backdrop" onclick="if(event.target===this)closeNewChat()">
   <div class="sheet">
     <h3>Новый чат</h3>
@@ -673,7 +682,6 @@
   </div>
 </div>
 
-<!-- ================= PROFILE ================= -->
 <div class="sheet-backdrop" id="profile-backdrop" onclick="if(event.target===this)closeProfile()">
   <div class="sheet">
     <h3>Профиль</h3>
@@ -698,7 +706,6 @@
   </div>
 </div>
 
-<!-- ================= EDIT MESSAGE SHEET ================= -->
 <div class="sheet-backdrop" id="edit-backdrop" onclick="if(event.target===this)closeEdit()">
   <div class="sheet edit-sheet">
     <h3>Редактировать сообщение</h3>
@@ -709,12 +716,10 @@
   </div>
 </div>
 
-<!-- ================= CONTEXT MENUS ================= -->
 <div class="ctx-menu" id="ctx-main"></div>
 <div class="ctx-menu sub" id="ctx-sub"></div>
 
 <script>
-/* ================= STATE ================= */
 const state = {
   me: null, chats: [], current: null,
   refreshTimer: null, pollTimer: null, lastMsgCount: 0,
@@ -727,7 +732,6 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const isNarrow = () => window.matchMedia("(max-width: 820px)").matches;
 
-/* ================= THEME ================= */
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const meta = document.querySelector('meta[name="theme-color"]');
@@ -745,7 +749,6 @@ function loadTheme() {
   applyTheme(t);
 }
 
-/* ================= ICONS ================= */
 const EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>`;
 const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7s-3.5 7-10 7c-1.5 0-2.8-.4-4-.9"/><path d="M6.6 6.6C3.7 8.3 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.4 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`;
 const CHECK_ONE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17l9-10"/></svg>`;
@@ -762,7 +765,6 @@ const ICO_STAR = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l
 
 document.querySelectorAll(".password-toggle").forEach(b => b.innerHTML = EYE);
 
-/* ================= HELPERS ================= */
 function alertBox(msg, success = false) {
   const el = $("auth-alert");
   el.textContent = msg;
@@ -785,7 +787,7 @@ function togglePassword(id, btn) {
 function handleEnter(e, fn) { if (e.key === "Enter") { e.preventDefault(); fn(); } }
 function autoGrow(el) {
   el.style.height = "auto";
-  el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  el.style.height = Math.min(el.scrollHeight, 140) + "px";
   updateSendButton();
 }
 function updateSendButton() {
@@ -824,7 +826,6 @@ function fmtFullDate(ts) {
   return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-/* ================= AUTH ================= */
 function showLogin() {
   hideAlert();
   $("view-register").style.display = "none";
@@ -895,7 +896,6 @@ async function doLoginPassword() {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "Ошибка входа");
     state.me = { id: d.id, name: d.name, password };
-    persist();
     enterMessenger();
   } catch (e) {
     alertBox(e.message);
@@ -953,7 +953,6 @@ async function doRegister() {
       });
     }
     state.me = { id, name: name || ("Пользователь " + id), password };
-    persist();
     enterMessenger();
   } catch (e) { alertBox(e.message); }
   finally { btn.disabled = false; btn.textContent = "Создать и войти"; }
@@ -970,25 +969,6 @@ function logout() {
   resetLoginForm();
 }
 
-/* ================= PERSIST ================= */
-function persist() {
-  try { localStorage.setItem("message.me", JSON.stringify(state.me)); } catch {}
-}
-
-// НЕ восстанавливаем сессию автоматически на телефоне — надо явно залогиниться.
-// На ПК — восстанавливаем для удобства.
-function restore() {
-  if (isNarrow()) return false;
-  try {
-    const raw = localStorage.getItem("message.me");
-    if (!raw) return false;
-    const me = JSON.parse(raw);
-    if (me && me.id && me.password) { state.me = me; return true; }
-  } catch {}
-  return false;
-}
-
-/* ================= MESSENGER ================= */
 function enterMessenger() {
   $("me-avatar").textContent = initials(state.me.name);
   $("me-name").textContent = state.me.name || "—";
@@ -1011,7 +991,6 @@ function stopTimers() {
   state.refreshTimer = null; state.pollTimer = null;
 }
 
-/* ================= CHAT LIST ================= */
 async function loadChats() {
   if (!state.me) return;
   try {
@@ -1053,7 +1032,6 @@ function renderChats() {
   }).join("");
 }
 
-/* ================= CONVERSATION ================= */
 function openChat(id, name, isFavorites = false) {
   state.current = { id, name, isFavorites };
   state.lastMsgCount = 0;
@@ -1124,7 +1102,6 @@ function renderMessages(msgs) {
       quoteHtml = `<div class="bubble-quote"><b style="font-weight:600">${escapeHtml(qFrom)}</b> ${escapeHtml(qText.slice(0, 120))}</div>`;
     }
 
-    // Статусы (Доставлено/Прочитано) и "изменено" НЕ показываем в Избранном
     let meta = "";
     if (!isFav) {
       if (mine) {
@@ -1156,7 +1133,6 @@ function renderMessages(msgs) {
   bindBubbleEvents();
 }
 
-/* ================= SEND ================= */
 async function sendMessage() {
   const input = $("msg-input");
   const text = input.value.trim();
@@ -1197,7 +1173,6 @@ async function sendMessage() {
   } catch {}
 }
 
-/* ================= REPLY ================= */
 function setReply(msg) {
   state.pendingReply = msg;
   const bar = $("reply-bar");
@@ -1212,10 +1187,10 @@ function cancelReply() {
   $("reply-bar").classList.remove("show");
 }
 
-/* ================= CONTEXT MENU ================= */
 function bindBubbleEvents() {
   document.querySelectorAll(".bubble").forEach(bubble => {
     const id = bubble.dataset.id;
+    if (id === "__pending") return;
     bubble.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       const msg = state.lastMessages.find(m => m.id === id);
@@ -1245,8 +1220,6 @@ function hideCtx() {
 function showCtxMain(msg, x, y) {
   state.contextMsg = msg;
   const menu = $("ctx-main");
-  const mine = msg.from === state.me.id;
-
   const items = [
     { id: "reply", ico: ICO_REPLY, label: "Ответить" },
     { id: "copy", ico: ICO_COPY, label: "Скопировать" },
@@ -1279,7 +1252,6 @@ function showCtxMain(msg, x, y) {
 function showCtxSub(msg, x, y) {
   const sub = $("ctx-sub");
   const mine = msg.from === state.me.id;
-
   const items = [
     { id: "edit", ico: ICO_EDIT, label: "Редактировать", onlyMine: true },
     { id: "delete", ico: ICO_DEL, label: "Удалить", danger: true, onlyMine: true },
@@ -1383,7 +1355,6 @@ async function saveEdit() {
   } catch {}
 }
 
-/* ================= NEW CHAT ================= */
 function openNewChat() {
   $("new-chat-id").value = "";
   $("new-chat-backdrop").classList.add("active");
@@ -1413,7 +1384,6 @@ function shake(el) {
   setTimeout(() => el.style.borderColor = "", 1200);
 }
 
-/* ================= PROFILE ================= */
 function openProfile() {
   if (!state.me) return;
   $("profile-avatar").textContent = initials(state.me.name);
@@ -1438,7 +1408,6 @@ async function saveName() {
     const d = await r.json();
     if (r.ok) {
       state.me.name = d.name;
-      persist();
       $("me-avatar").textContent = initials(d.name);
       $("me-name").textContent = d.name;
       $("profile-name").textContent = d.name;
@@ -1449,12 +1418,10 @@ async function saveName() {
   } catch {}
 }
 
-/* ================= BOOT ================= */
 window.addEventListener("DOMContentLoaded", () => {
   loadTheme();
-  // Всегда показываем авторизацию на телефоне. На ПК — можно восстановить сессию.
-  if (restore()) enterMessenger();
-  else resetLoginForm();
+  try { localStorage.removeItem("message.me"); } catch {}
+  resetLoginForm();
 });
 </script>
 </body>
