@@ -3,72 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>iMessage Web</title>
+  <title>Message</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      background-color: #161617;
+      color: #f5f5f7;
     }
-    .glass {
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+    .apple-card {
+      background: rgba(30, 30, 32, 0.85);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4">
+<body class="h-screen flex items-center justify-center p-4 overflow-hidden relative select-none">
 
-  <div id="auth-screen" class="glass rounded-3xl p-8 w-full max-w-md shadow-2xl text-center">
-    <h1 class="text-3xl font-semibold text-gray-800 mb-2">Сообщения</h1>
-    <p class="text-gray-500 mb-6 text-sm">Простой и безопасный мессенджер</p>
+  <!-- Главный приветственный экран (стиль iCloud) -->
+  <div id="landing-screen" class="flex flex-col items-center justify-between h-[80vh] max-w-2xl text-center px-4">
+    <div class="mt-12">
+      <h1 class="text-7xl md:text-8xl font-bold tracking-tight text-white">Message</h1>
+    </div>
 
-    <div id="auth-error" class="text-red-500 text-sm mb-4 hidden"></div>
+    <button onclick="showAuthModal()" class="bg-white hover:bg-gray-200 text-black font-medium text-lg px-8 py-3 rounded-full transition duration-200 shadow-lg cursor-pointer">
+      Войти
+    </button>
 
-    <div class="space-y-4">
-      <input id="auth-id" type="text" placeholder="6-значный ID (для входа)" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50">
-      <input id="auth-password" type="password" placeholder="Пароль" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50">
-      
-      <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition">Войти</button>
-      <div class="relative my-4">
-        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
-        <div class="relative text-xs text-gray-400 bg-transparent px-2">ИЛИ</div>
-      </div>
-      <button onclick="register()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-3 rounded-xl transition">Зарегистрироваться</button>
+    <div class="mb-12">
+      <p class="text-2xl md:text-4xl font-semibold leading-relaxed text-gray-200">
+        Сервис экспресс-сообщений.
+      </p>
     </div>
   </div>
 
-  <div id="chat-screen" class="glass rounded-3xl w-full max-w-4xl h-[80vh] shadow-2xl flex hidden overflow-hidden">
-    <div class="w-1/3 border-r border-gray-200/50 p-4 flex flex-col justify-between bg-white/30">
-      <div>
-        <div class="flex justify-between items-center mb-4">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Мой ID</span>
-          <span id="my-id-display" class="font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-sm font-bold">------</span>
+  <!-- Модальное окно авторизации (стиль Apple ID) -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
+    <div class="apple-card rounded-3xl p-8 w-full max-w-md shadow-2xl relative flex flex-col items-center text-center">
+      
+      <button onclick="hideAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">✕</button>
+
+      <!-- Иконка Apple кольца -->
+      <div class="w-20 h-20 mb-4 flex items-center justify-center">
+        <svg class="w-16 h-16 text-white" viewBox="0 0 170 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.94.13-9.8-1.92-14.58-6.13-3.23-2.82-7.16-7.55-11.8-14.18-6.93-9.92-12.28-20.91-16.03-32.97-3.75-12.06-5.63-23.77-5.63-35.13 0-13.34 3.33-24.62 10-33.84 6.67-9.22 15.19-13.9 25.56-14.04 4.58 0 9.77 1.2 15.57 3.6 5.8 2.4 9.68 3.65 11.64 3.75 1.77 0 5.82-1.35 12.15-4.05 6.33-2.7 11.69-3.9 16.08-3.6 12.06.95 21.32 5.37 27.78 13.26-10.74 6.53-16.01 15.58-15.8 27.15.22 9.07 3.82 16.66 10.8 22.77 6.98 6.11 15.3 9.49 24.96 10.14-2.12 6.45-4.8 12.98-8.04 19.59zM119.22 31.06c0-6.84 2.5-13.39 7.5-19.65 5-6.26 11.26-10.08 18.78-11.46.21 1.02.32 1.9.32 2.65 0 6.77-2.58 13.34-7.74 19.7-5.16 6.36-11.4 10.19-18.72 11.48-.07-.74-.14-1.64-.14-2.72z" fill="currentColor"/>
+        </svg>
+      </div>
+
+      <h2 class="text-2xl font-semibold mb-6">Вход с Аккаунтом Message</h2>
+
+      <div id="auth-error" class="text-red-400 text-sm mb-4 hidden w-full text-center"></div>
+
+      <div class="space-y-4 w-full">
+        <!-- Поле ввода ID с кнопкой генерации -->
+        <div class="relative w-full">
+          <input id="auth-id" type="text" maxlength="6" placeholder="6-значный ID" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 pr-24 font-mono">
+          <button type="button" onclick="generateRandomId()" class="absolute right-2 top-2 bottom-2 px-3 bg-white/10 hover:bg-white/20 text-xs text-blue-400 rounded-lg transition border border-white/10">
+            Сгенерировать
+          </button>
         </div>
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Чаты</h2>
-        <div class="space-y-2">
-          <input id="target-id" type="text" placeholder="Введите ID собеседника..." class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white/50 focus:outline-none">
-          <button onclick="startChat()" class="w-full bg-blue-500 text-white text-sm py-2 rounded-xl">Открыть чат</button>
+
+        <!-- Поле ввода пароля (только английский) -->
+        <input id="auth-password" type="password" placeholder="Пароль (только латиница)" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+
+        <div class="pt-2 flex gap-3">
+          <button onclick="login()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition">Продолжить</button>
+          <button onclick="register()" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl transition">Создать ID</button>
         </div>
       </div>
-      <button onclick="location.reload()" class="text-red-500 text-sm font-medium text-left">Выйти</button>
+
+      <p class="text-xs text-gray-500 mt-6 leading-relaxed">
+        Сведения об аккаунте Message используются для обеспечения безопасного входа и передачи сообщений.
+      </p>
+    </div>
+  </div>
+
+  <!-- Экран Мессенджера -->
+  <div id="chat-screen" class="apple-card rounded-3xl w-full max-w-5xl h-[85vh] shadow-2xl flex hidden overflow-hidden border border-white/10">
+    <!-- Боковая панель -->
+    <div class="w-1/3 border-r border-white/10 p-4 flex flex-col justify-between bg-black/20">
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Мой ID</span>
+          <span id="my-id-display" class="font-mono bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg text-sm font-bold border border-blue-500/30">------</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-4">Message</h2>
+        <div class="space-y-3">
+          <input id="target-id" type="text" maxlength="6" placeholder="ID собеседника..." class="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm focus:outline-none focus:border-blue-500 font-mono text-white">
+          <button onclick="startChat()" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm py-2.5 rounded-xl transition font-medium">Открыть чат</button>
+        </div>
+      </div>
+      <button onclick="location.reload()" class="text-red-400 hover:text-red-300 text-sm font-medium text-left transition">Выйти</button>
     </div>
 
-    <div class="w-2/3 flex flex-col justify-between bg-white/40">
-      <div class="p-4 border-b border-gray-200/50 bg-white/20 flex items-center">
-        <span class="text-sm font-medium text-gray-600">Собеседник: </span>
-        <span id="active-chat-id" class="ml-2 font-mono font-bold text-gray-800">Не выбран</span>
+    <!-- Область диалога -->
+    <div class="w-2/3 flex flex-col justify-between bg-black/40">
+      <div class="p-4 border-b border-white/10 bg-white/5 flex items-center">
+        <span class="text-sm font-medium text-gray-400">Собеседник: </span>
+        <span id="active-chat-id" class="ml-2 font-mono font-bold text-white">Не выбран</span>
       </div>
 
       <div id="messages-container" class="p-4 overflow-y-auto flex-1 space-y-3">
-        <div class="text-center text-gray-400 text-sm mt-10">Введите ID собеседника слева и нажмите «Открыть чат»</div>
+        <div class="text-center text-gray-500 text-sm mt-10">Введите ID собеседника слева и нажмите «Открыть чат»</div>
       </div>
 
-      <div class="p-4 border-t border-gray-200/50 bg-white/20 flex gap-2">
-        <input id="message-input" type="text" placeholder="Ваше сообщение..." class="flex-1 px-4 py-2 rounded-full border border-gray-300 bg-white/60 focus:outline-none text-sm">
-        <button onclick="sendMessage()" class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-medium">Отправить</button>
+      <div class="p-4 border-t border-white/10 bg-white/5 flex gap-2">
+        <input id="message-input" type="text" placeholder="Ваше сообщение..." class="flex-1 px-4 py-2.5 rounded-full border border-white/10 bg-white/10 focus:outline-none focus:border-blue-500 text-sm text-white">
+        <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-full text-sm font-medium transition">Отправить</button>
       </div>
     </div>
   </div>
@@ -78,9 +121,31 @@
     let myId = null;
     let currentChatId = null;
 
+    function showAuthModal() {
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function hideAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function generateRandomId() {
+      const randomId = Math.floor(100000 + Math.random() * 900000).toString();
+      document.getElementById('auth-id').value = randomId;
+    }
+
+    function validateEnglishPassword(password) {
+      // Проверка: только латинские буквы, цифры и спецсимволы
+      return /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(password);
+    }
+
     async function register() {
       const password = document.getElementById('auth-password').value;
-      if (!password) return showError('Придумайте пароль');
+      
+      if (!password) return showError('Введите пароль');
+      if (!validateEnglishPassword(password)) {
+        return showError('Пароль должен содержать только английские буквы');
+      }
 
       const res = await fetch('/api/register', {
         method: 'POST',
@@ -91,7 +156,7 @@
 
       if (data.error) return showError(data.error);
 
-      alert(`Ваш личный 6-значный ID: ${data.id}\nЗапомните его для входа!`);
+      alert(`Ваш личный ID: ${data.id}\nЗапомните его для последующего входа!`);
       myId = data.id;
       openChatScreen();
     }
@@ -99,6 +164,9 @@
     async function login() {
       const id = document.getElementById('auth-id').value;
       const password = document.getElementById('auth-password').value;
+
+      if (!id) return showError('Введите ваш ID');
+      if (!password) return showError('Введите пароль');
 
       const res = await fetch('/api/login', {
         method: 'POST',
@@ -114,7 +182,8 @@
     }
 
     function openChatScreen() {
-      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('landing-screen').classList.add('hidden');
+      document.getElementById('auth-modal').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
       document.getElementById('my-id-display').innerText = myId;
       socket.emit('register_socket', myId);
@@ -170,7 +239,7 @@
       const div = document.createElement('div');
       div.className = `flex ${isMe ? 'justify-end' : 'justify-start'}`;
       div.innerHTML = `
-        <div class="max-w-xs px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'} shadow">
+        <div class="max-w-xs px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white/10 text-white rounded-bl-none'} shadow">
           ${msg.text}
         </div>
       `;
