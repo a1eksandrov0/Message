@@ -11,6 +11,7 @@ const DB_FILE = path.join(ROOT, "db.json");
 const PUBLIC_DIR = path.join(ROOT, "public");
 const INDEX_FILE = path.join(PUBLIC_DIR, "index.html");
 
+/* -------- DB -------- */
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) return { users: {}, chats: {} };
   try {
@@ -26,7 +27,7 @@ function saveDB(db) { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)); }
 function hash(p) { return crypto.createHash("sha256").update(p).digest("hex"); }
 function chatKey(a, b) { return [a, b].sort().join("_"); }
 
-/* ============ API ============ */
+/* -------- API -------- */
 
 app.get("/api/generate-id", (req, res) => {
   const db = loadDB();
@@ -61,7 +62,9 @@ app.post("/api/login", (req, res) => {
   const { id, password } = req.body || {};
   const db = loadDB();
   const user = db.users[id];
-  if (!user || user.password !== hash(password)) return res.status(401).json({ error: "Неверный ID или пароль" });
+  if (!user || user.password !== hash(password)) {
+    return res.status(401).json({ error: "Неверный ID или пароль" });
+  }
   res.json({ id, name: user.name || ("Пользователь " + id) });
 });
 
@@ -183,12 +186,11 @@ app.post("/api/messages/delete", (req, res) => {
   res.json({ ok: true });
 });
 
-/* ============ ФРОНТЕНД ============ */
+/* -------- ФРОНТЕНД -------- */
 
 app.use(express.static(PUBLIC_DIR));
 
-// все страницы, кроме /api/*, отдают index.html — роутинг делает фронтенд
-app.get(["/", "/login", "/id:userId", "/index.html"], (req, res) => {
+app.get(["/", "/login", "/register", "/id:userId", "/index.html"], (req, res) => {
   if (!fs.existsSync(INDEX_FILE)) return res.status(500).send("index.html не найден");
   res.sendFile(INDEX_FILE);
 });
