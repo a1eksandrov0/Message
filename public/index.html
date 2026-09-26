@@ -705,4 +705,430 @@ const $ = (id) => document.getElementById(id);
 
 /* ============ ICONS ============ */
 const EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>`;
-const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7s-3.5 7
+const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7s-3.5 7-10 7c-1.5 0-2.8-.4-4-.9"/><path d="M6.6 6.6C3.7 8.3 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.4 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`;
+
+document.querySelectorAll(".password-toggle").forEach(b => b.innerHTML = EYE);
+
+/* ============ UI HELPERS ============ */
+function alertBox(msg, success = false) {
+  const el = $("auth-alert");
+  el.textContent = msg;
+  el.classList.toggle("success", success);
+  el.classList.remove("show");
+  void el.offsetWidth;
+  el.classList.add("show");
+}
+function hideAlert() { $("auth-alert").classList.remove("show"); }
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+function togglePassword(id, btn) {
+  const input = $(id);
+  const visible = input.type === "text";
+  input.type = visible ? "password" : "text";
+  btn.innerHTML = visible ? EYE : EYE_OFF;
+}
+
+function handleEnter(e, fn) {
+  if (e.key === "Enter") { e.preventDefault(); fn(); }
+}
+
+function autoGrow(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 140) + "px";
+  $("send-btn").disabled = !el.value.trim();
+}
+
+function handleComposerKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function fmtTime(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const now = new Date();
+  const same = d.toDateString() === now.toDateString();
+  if (same) return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const diff = (now - d) / 86400000;
+  if (diff < 7) return d.toLocaleDateString("ru-RU", { weekday: "short" });
+  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
+}
+
+function fmtBubbleTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+}
+
+function initials(name) {
+  if (!name) return "?";
+  const t = name.trim();
+  return t.charAt(0).toUpperCase() || "?";
+}
+
+/* ============ AUTH ============ */
+function showLogin() {
+  hideAlert();
+  $("view-register").style.display = "none";
+  $("view-login").style.display = "";
+  setTimeout(() => $("login-id").focus(), 100);
+}
+
+async function showRegister() {
+  hideAlert();
+  $("view-login").style.display = "none";
+  $("view-register").style.display = "";
+  $("reg-id").value = "……";
+  try {
+    const r = await fetch("/api/generate-id");
+    const d = await r.json();
+    $("reg-id").value = d.id;
+  } catch {
+    alertBox("Не удалось создать ID. Попробуйте позже.");
+  }
+  setTimeout(() => $("reg-name").focus(), 100);
+}
+
+async function doLogin() {
+  hideAlert();
+  const id = $("login-id").value.trim();
+  const password = $("login-password").value;
+
+  if (!/^\d{6}$/.test(id)) return alertBox("ID должен состоять из 6 цифр.");
+  if (!password) return alertBox("Введите пароль.");
+
+  const btn = $("login-btn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>Вход…`;
+
+  try {
+    const r = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, password })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || "Ошибка входа");
+
+    state.me = { id: d.id, name: d.name, password };
+    persist();
+    enterMessenger();
+  } catch (e) {
+    alertBox(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Войти";
+  }
+}
+
+async function doRegister() {
+  hideAlert();
+  const id = $("reg-id").value.trim();
+  const name = $("reg-name").value.trim();
+  const password = $("reg-password").value;
+
+  if (!/^\d{6}$/.test(id)) return alertBox("ID ещё не готов. Подождите или обновите.");
+  if (password.length < 6) return alertBox("Пароль минимум 6 символов.");
+
+  const btn = $("register-btn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>Создание…`;
+
+  try {
+    const r = await fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, password })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || "Ошибка регистрации");
+
+    // сохраняем имя, если ввели
+    if (name) {
+      await fetch("/api/user/name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, password, name })
+      });
+    }
+
+    state.me = { id, name: name || ("Пользователь " + id), password };
+    persist();
+    enterMessenger();
+  } catch (e) {
+    alertBox(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Создать и войти";
+  }
+}
+
+function logout() {
+  stopTimers();
+  try { localStorage.removeItem("message.me"); } catch {}
+  state.me = null;
+  state.current = null;
+  state.chats = [];
+  closeProfile();
+  showScreen("auth-screen");
+  showLogin();
+  $("login-password").value = "";
+}
+
+/* ============ PERSIST ============ */
+function persist() {
+  try { localStorage.setItem("message.me", JSON.stringify(state.me)); } catch {}
+}
+function restore() {
+  try {
+    const raw = localStorage.getItem("message.me");
+    if (!raw) return false;
+    const me = JSON.parse(raw);
+    if (me && me.id && me.password) {
+      state.me = me;
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+/* ============ MESSENGER ============ */
+function enterMessenger() {
+  showScreen("list-screen");
+  loadChats();
+  startTimers();
+}
+
+function startTimers() {
+  stopTimers();
+  state.refreshTimer = setInterval(loadChats, 4000);
+  state.pollTimer = setInterval(() => {
+    if (state.current) loadMessages(state.current.id);
+  }, 2000);
+}
+function stopTimers() {
+  if (state.refreshTimer) clearInterval(state.refreshTimer);
+  if (state.pollTimer) clearInterval(state.pollTimer);
+  state.refreshTimer = null;
+  state.pollTimer = null;
+}
+
+/* ============ CHAT LIST ============ */
+async function loadChats() {
+  if (!state.me) return;
+  try {
+    const r = await fetch("/api/chats/" + state.me.id);
+    const list = await r.json();
+    state.chats = Array.isArray(list) ? list : [];
+    renderChats();
+  } catch {}
+}
+
+function renderChats() {
+  const list = $("chat-list");
+  const q = ($("search-input").value || "").trim().toLowerCase();
+
+  const items = state.chats.filter(c => {
+    if (!q) return true;
+    return (c.name || "").toLowerCase().includes(q) || c.with.includes(q);
+  });
+
+  if (!items.length) {
+    list.innerHTML = `<div class="empty">
+      ${q ? "Ничего не найдено" : "Нет чатов.<br>Нажмите ＋ вверху, чтобы начать диалог по ID."}
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(c => `
+    <div class="chat-row" onclick="openChat('${c.with}', '${escapeAttr(c.name)}')">
+      <div class="avatar">${escapeHtml(initials(c.name))}</div>
+      <div class="chat-info">
+        <div class="chat-name">${escapeHtml(c.name)}</div>
+        <div class="chat-last">${escapeHtml(c.last || "Нет сообщений")}</div>
+      </div>
+      <div class="chat-time">${fmtTime(c.time)}</div>
+    </div>
+  `).join("");
+}
+
+/* ============ CONVERSATION ============ */
+function openChat(id, name) {
+  state.current = { id, name };
+  $("chat-with-name").textContent = name;
+  $("chat-with-id").textContent = "ID: " + id;
+  showScreen("chat-screen");
+  $("messages").innerHTML = "";
+  loadMessages(id);
+  setTimeout(() => $("msg-input").focus(), 150);
+}
+
+function backToList() {
+  state.current = null;
+  showScreen("list-screen");
+  loadChats();
+}
+
+async function loadMessages(otherId) {
+  if (!state.me || !state.current) return;
+  try {
+    const r = await fetch(`/api/messages/${state.me.id}/${otherId}`);
+    const msgs = await r.json();
+    renderMessages(msgs);
+  } catch {}
+}
+
+function renderMessages(msgs) {
+  const box = $("messages");
+  const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+
+  let html = "";
+  let lastDay = "";
+  msgs.forEach((m, i) => {
+    const day = new Date(m.time).toDateString();
+    if (day !== lastDay) {
+      lastDay = day;
+      const today = new Date().toDateString();
+      const yest = new Date(Date.now() - 86400000).toDateString();
+      const label = day === today ? "Сегодня"
+                  : day === yest ? "Вчера"
+                  : new Date(m.time).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+      html += `<div class="msg-time"><b>${label}</b></div>`;
+    }
+    const mine = m.from === state.me.id;
+    html += `
+      <div class="msg-row ${mine ? "me" : ""}">
+        <div class="bubble">${escapeHtml(m.text)}</div>
+      </div>
+    `;
+  });
+  box.innerHTML = html || `<div class="empty" style="padding:60px 20px">Нет сообщений</div>`;
+
+  if (wasAtBottom) box.scrollTop = box.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = $("msg-input");
+  const text = input.value.trim();
+  if (!text || !state.current || !state.me) return;
+
+  input.value = "";
+  autoGrow(input);
+
+  // оптимистично
+  const box = $("messages");
+  const emptyEl = box.querySelector(".empty");
+  if (emptyEl) emptyEl.remove();
+  box.insertAdjacentHTML("beforeend", `
+    <div class="msg-row me">
+      <div class="bubble">${escapeHtml(text)}</div>
+    </div>
+  `);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from: state.me.id, to: state.current.id, text })
+    });
+    loadMessages(state.current.id);
+  } catch {}
+}
+
+/* ============ NEW CHAT ============ */
+function openNewChat() {
+  $("new-chat-id").value = "";
+  $("new-chat-backdrop").classList.add("active");
+  setTimeout(() => $("new-chat-id").focus(), 100);
+}
+function closeNewChat() {
+  $("new-chat-backdrop").classList.remove("active");
+}
+
+async function startChatByID() {
+  const id = $("new-chat-id").value.trim();
+  if (!/^\d{6}$/.test(id)) {
+    $("new-chat-id").style.borderColor = "rgba(255,69,58,.7)";
+    setTimeout(() => $("new-chat-id").style.borderColor = "", 1200);
+    return;
+  }
+  if (id === state.me.id) {
+    $("new-chat-id").style.borderColor = "rgba(255,69,58,.7)";
+    setTimeout(() => $("new-chat-id").style.borderColor = "", 1200);
+    return;
+  }
+  try {
+    const r = await fetch("/api/user/" + id);
+    if (!r.ok) throw new Error("not found");
+    const u = await r.json();
+    closeNewChat();
+    openChat(u.id, u.name);
+    loadChats();
+  } catch {
+    $("new-chat-id").style.borderColor = "rgba(255,69,58,.7)";
+    setTimeout(() => $("new-chat-id").style.borderColor = "", 1200);
+  }
+}
+
+/* ============ PROFILE ============ */
+function openProfile() {
+  if (!state.me) return;
+  $("profile-avatar").textContent = initials(state.me.name);
+  $("profile-name").textContent = state.me.name || "—";
+  $("profile-id").textContent = "ID: " + state.me.id;
+  $("profile-name-input").value = state.me.name || "";
+  $("profile-backdrop").classList.add("active");
+}
+function closeProfile() {
+  $("profile-backdrop").classList.remove("active");
+}
+async function saveName() {
+  const name = $("profile-name-input").value.trim();
+  if (!name) return;
+  try {
+    const r = await fetch("/api/user/name", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: state.me.id, password: state.me.password, name })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      state.me.name = d.name;
+      persist();
+      $("profile-name").textContent = d.name;
+      $("profile-avatar").textContent = initials(d.name);
+      $("profile-name-input").value = d.name;
+    }
+  } catch {}
+}
+
+/* ============ UTILS ============ */
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+function escapeAttr(s) {
+  return String(s == null ? "" : s).replace(/'/g, "&#39;").replace(/\\/g, "\\\\");
+}
+
+/* ============ BOOT ============ */
+window.addEventListener("DOMContentLoaded", () => {
+  if (restore()) {
+    enterMessenger();
+  } else {
+    showLogin();
+  }
+});
+</script>
+</body>
+</html>
