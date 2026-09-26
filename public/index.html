@@ -10,11 +10,10 @@
 <style>
   :root, html[data-theme="dark"] {
     --bg: #1c1c1e; --bg-2: #000; --bg-3: #2c2c2e; --bg-4: #3a3a3c;
-    --surface: rgba(28,28,30,0.72);
     --nav-blur: rgba(28,28,30,0.78);
     --separator: rgba(255,255,255,0.10);
     --text: #fff; --text-2: #8e8e93; --text-3: #636366;
-    --blue: #0a84ff; --blue-ios: #0a84ff; --green: #30d158; --red: #ff453a;
+    --blue: #0a84ff; --green: #30d158; --red: #ff453a;
     --bubble-me: linear-gradient(180deg,#0a84ff,#0066ff);
     --bubble-other: #26262a;
     --bubble-other-text: #fff;
@@ -29,11 +28,10 @@
   }
   html[data-theme="light"] {
     --bg: #f2f2f7; --bg-2: #fff; --bg-3: #e5e5ea; --bg-4: #d1d1d6;
-    --surface: rgba(255,255,255,0.75);
     --nav-blur: rgba(249,249,249,0.82);
     --separator: rgba(60,60,67,0.12);
     --text: #000; --text-2: #3c3c43; --text-3: #8e8e93;
-    --blue: #007aff; --blue-ios: #007aff; --green: #34c759; --red: #ff3b30;
+    --blue: #007aff; --green: #34c759; --red: #ff3b30;
     --bubble-me: linear-gradient(180deg,#007aff,#0066d6);
     --bubble-other: #e9e9eb;
     --bubble-other-text: #000;
@@ -85,6 +83,21 @@
 
   .screen { position: fixed; inset: 0; display: none; }
   .screen.active { display: flex; }
+
+  /* редирект-страница */
+  #redirect-screen {
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+    background: var(--bg-2);
+  }
+  .redirect-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .redirect-text { color: var(--text-2); font-size: 14px; }
 
   #auth-screen { align-items: center; justify-content: center; padding: 24px; }
   .auth-card {
@@ -164,7 +177,7 @@
     margin-top: 16px;
   }
   .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
-  .btn-link { margin: 16px auto 0; display: block; color: var(--blue-ios);
+  .btn-link { margin: 16px auto 0; display: block; color: var(--blue);
     font-size: 14px; font-weight: 500; padding: 6px 10px; width: fit-content; }
   .alert {
     display: none; margin-bottom: 14px; padding: 11px 14px; border-radius: 12px;
@@ -175,6 +188,21 @@
   .alert.show { display: block; animation: shake 0.35s; }
   .alert.success {
     border-color: rgba(48,209,88,0.25); background: rgba(48,209,88,0.10); color: #3ddb6b;
+  }
+  .success-id-box {
+    text-align: center;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(10,132,255,0.10);
+    border: 1px solid rgba(10,132,255,0.30);
+    margin-bottom: 14px;
+  }
+  .success-id-box .label {
+    display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6px;
+  }
+  .success-id-box .id {
+    font-size: 26px; font-weight: 700; letter-spacing: 0.2em;
+    color: var(--blue); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   #main-screen { flex-direction: row; height: 100dvh; width: 100vw; overflow: hidden; background: var(--bg); }
@@ -198,13 +226,10 @@
   .me-meta { flex: 1; min-width: 0; line-height: 1.15; }
   .me-meta b { font-size: 14px; font-weight: 600; display: block;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .me-meta span {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px; color: var(--text-2); letter-spacing: 0.01em; font-weight: 400;
-  }
+  .me-meta span { font-size: 12px; color: var(--text-2); }
   .header-action {
     width: 34px; height: 34px; border-radius: 50%;
-    display: grid; place-items: center; color: var(--blue-ios);
+    display: grid; place-items: center; color: var(--blue);
     transition: background 0.15s, transform 0.15s;
   }
   .header-action:hover { background: rgba(120,120,128,0.15); }
@@ -251,7 +276,7 @@
   .avatar-fav svg { width: 22px; height: 22px; color: #fff; }
   .chat-info { flex: 1; min-width: 0; }
   .chat-name {
-    font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 2px;
+    font-size: 14.5px; font-weight: 600; margin-bottom: 2px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .chat-last { font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -260,8 +285,7 @@
   .empty { padding: 60px 24px; text-align: center; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
 
   .chat-pane { flex: 1; display: flex; flex-direction: column; min-width: 0;
-    background: var(--bg); position: relative; overflow: hidden;
-    transition: background 0.35s var(--ease); }
+    background: var(--bg); position: relative; overflow: hidden; }
   .chat-header {
     flex: 0 0 auto; display: flex; align-items: center; gap: 12px;
     padding: 12px 18px; border-bottom: 1px solid var(--separator);
@@ -271,71 +295,57 @@
     z-index: 3; padding-top: calc(12px + env(safe-area-inset-top));
   }
   .back-btn { display: none; width: 34px; height: 34px; border-radius: 50%;
-    color: var(--blue-ios); place-items: center; margin-right: 4px; }
+    color: var(--blue); place-items: center; margin-right: 4px; }
   .back-btn svg { width: 22px; height: 22px; }
   .chat-header .avatar { flex: 0 0 36px; width: 36px; height: 36px; font-size: 15px; }
   .chat-header-meta { flex: 1; min-width: 0; line-height: 1.15; }
   .chat-header-meta b { font-size: 15px; font-weight: 600; display: block;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .chat-header-meta span {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px; color: var(--text-2); letter-spacing: 0.01em;
-  }
+  .chat-header-meta span { font-size: 12px; color: var(--text-2); }
 
-  /* ================= MESSAGES — жёсткие размеры ================= */
+  /* ============ MESSAGES ============ */
   .messages {
-    flex: 1 !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    padding: 16px 14px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 2px !important;
-    scroll-behavior: smooth;
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    align-items: stretch;
+    gap: 2px; scroll-behavior: smooth;
   }
   .messages::-webkit-scrollbar { width: 0; }
 
   .msg-row {
-    display: flex !important;
-    justify-content: flex-start !important;
-    padding: 1px 4px !important;
+    display: flex;
+    width: 100%;
+    padding: 1px 4px;
     animation: msg-in 0.22s var(--ease);
     position: relative;
-    max-width: 100% !important;
-    width: auto !important;
   }
-  .msg-row.me { justify-content: flex-end !important; align-self: flex-end !important; }
-  .msg-row:not(.me) { align-self: flex-start !important; }
+  .msg-row.me { justify-content: flex-end; }
+  .msg-row:not(.me) { justify-content: flex-start; }
   .msg-row.removing { animation: msg-out 0.28s var(--ease) forwards; }
 
   .bubble-wrap {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    width: fit-content !important;
-    max-width: min(420px, 60vw) !important;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: min(420px, 65vw);
   }
-  .msg-row.me .bubble-wrap { align-items: flex-end !important; }
+  .msg-row.me .bubble-wrap { align-items: flex-end; }
 
   .bubble {
-    padding: 6px 12px !important;
-    border-radius: 18px !important;
-    font-size: 15px !important;
-    line-height: 1.3 !important;
-    width: auto !important;
-    max-width: min(420px, 60vw) !important;
-    min-width: 0 !important;
-    word-wrap: break-word !important;
-    white-space: pre-wrap !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
-    position: relative !important;
-    cursor: default !important;
-    display: inline-block !important;
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.3;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    cursor: default;
+    display: inline-block;
   }
-  .msg-row:not(.me) .bubble { background: var(--bubble-other); color: var(--bubble-other-text); border-bottom-left-radius: 5px !important; }
-  .msg-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 5px !important;
-    box-shadow: 0 2px 6px rgba(10,132,255,0.25), inset 0 1px 0 rgba(255,255,255,0.18) !important; }
+  .msg-row:not(.me) .bubble { background: var(--bubble-other); color: var(--bubble-other-text); border-bottom-left-radius: 5px; }
+  .msg-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 5px;
+    box-shadow: 0 2px 6px rgba(10,132,255,0.25), inset 0 1px 0 rgba(255,255,255,0.18); }
   .bubble::selection, .bubble *::selection { background: rgba(255,255,255,0.35); }
   .msg-row:not(.me) .bubble::selection { background: rgba(10,132,255,0.35); }
 
@@ -346,7 +356,6 @@
     font-size: 12.5px;
     line-height: 1.25;
     opacity: 0.85;
-    border-radius: 2px;
     max-height: 60px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -364,8 +373,7 @@
 
   .msg-time {
     font-size: 11.5px; color: var(--text-2); text-align: center;
-    margin: 14px 0 6px; font-weight: 500; letter-spacing: 0.02em;
-    align-self: center !important;
+    margin: 14px 0 6px; font-weight: 500; align-self: center;
   }
   .msg-time b { font-weight: 600; color: var(--text-3); }
 
@@ -382,7 +390,6 @@
     border: 1px solid var(--separator); border-radius: 18px;
     background: var(--input-bg); color: var(--text); outline: none;
     font-size: 15.5px; line-height: 1.35; resize: none;
-    transition: border-color 0.15s, background 0.15s;
   }
   .composer-input:focus { border-color: var(--blue); background: var(--input-bg-hover); }
   .composer-input::placeholder { color: var(--text-3); }
@@ -390,26 +397,20 @@
     flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%;
     background: linear-gradient(180deg, var(--blue), color-mix(in srgb, var(--blue) 85%, #000));
     display: grid; place-items: center; color: #fff;
-    transition: transform 0.15s, opacity 0.15s, filter 0.15s;
     align-self: flex-end; margin-bottom: 3px;
     box-shadow: 0 4px 12px rgba(10,132,255,0.35), inset 0 1px 0 rgba(255,255,255,0.30);
+    transition: transform 0.15s, opacity 0.15s, filter 0.15s;
   }
   .send-btn:hover:not(:disabled) { filter: brightness(1.1); }
   .send-btn:disabled { opacity: 0.4; transform: scale(0.9); box-shadow: none; }
   .send-btn svg { width: 16px; height: 16px; }
 
   .reply-bar {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    margin: 8px 14px 0;
-    padding: 8px 12px;
-    border-radius: 12px;
+    display: none; align-items: center; gap: 10px;
+    margin: 8px 14px 0; padding: 8px 12px; border-radius: 12px;
     background: var(--input-bg);
     border-left: 3px solid var(--blue);
-    font-size: 13px;
-    color: var(--text-2);
-    animation: card-in 0.22s var(--ease);
+    font-size: 13px; color: var(--text-2);
   }
   .reply-bar.show { display: flex; }
   .reply-bar .txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -419,7 +420,6 @@
     display: grid; place-items: center;
     color: var(--text-2); background: rgba(120,120,128,0.25);
   }
-  .reply-bar .close:hover { color: var(--text); }
 
   .pane-empty { flex: 1; display: grid; place-items: center; text-align: center; color: var(--text-2); padding: 24px; }
   .pane-empty-inner { max-width: 320px; }
@@ -446,17 +446,16 @@
     -webkit-backdrop-filter: blur(30px) saturate(180%);
     animation: card-in 0.3s var(--ease);
   }
-  .sheet h3 { margin: 0 0 6px; font-size: 19px; font-weight: 700; text-align: center; letter-spacing: -0.02em; }
+  .sheet h3 { margin: 0 0 6px; font-size: 19px; font-weight: 700; text-align: center; }
   .sheet p { margin: 0 0 16px; font-size: 13px; color: var(--text-2); text-align: center; line-height: 1.45; }
   .sheet .input {
     width: 100%; height: 50px; padding: 0 16px;
     border: 1px solid var(--separator); border-radius: 14px;
     background: var(--input-bg); outline: none;
     text-align: center; letter-spacing: 0.15em; font-size: 20px; font-weight: 700;
-    color: var(--blue); transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    color: var(--blue);
   }
-  .sheet .input:focus { border-color: var(--blue); background: var(--input-bg-hover); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
-  .sheet .input::placeholder { color: var(--text-3); }
+  .sheet .input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
   .sheet .btn-primary { margin-top: 14px; }
   .avatar-preview {
     display: flex; justify-content: center; align-items: center; gap: 12px;
@@ -467,10 +466,9 @@
     width: 100%; height: 50px; padding: 0 16px;
     border: 1px solid var(--separator); border-radius: 14px;
     background: var(--input-bg); color: var(--text); outline: none; font-size: 15px;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
     margin-bottom: 10px;
   }
-  .sheet-input:focus { border-color: var(--blue); background: var(--input-bg-hover); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
+  .sheet-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
 
   .theme-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -478,10 +476,7 @@
     background: var(--input-bg); border: 1px solid var(--separator); margin: 6px 0 14px;
   }
   .theme-row .label { font-size: 14px; font-weight: 500; color: var(--text); }
-  .seg {
-    display: inline-flex; background: rgba(120,120,128,0.20);
-    border-radius: 10px; padding: 3px; position: relative;
-  }
+  .seg { display: inline-flex; background: rgba(120,120,128,0.20); border-radius: 10px; padding: 3px; position: relative; }
   .seg button {
     position: relative; z-index: 1; padding: 6px 14px;
     font-size: 13px; font-weight: 600; color: var(--text-2);
@@ -501,25 +496,21 @@
     position: fixed; z-index: 200; min-width: 220px;
     background: var(--context-bg);
     border: 1px solid var(--separator); border-radius: 14px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
     backdrop-filter: blur(30px) saturate(180%);
     -webkit-backdrop-filter: blur(30px) saturate(180%);
     overflow: hidden; padding: 4px; display: none;
-    animation: ctx-in 0.14s var(--ease);
   }
   .ctx-menu.show { display: block; }
-  .ctx-menu.sub { animation: ctx-in-sub 0.14s var(--ease); }
   .ctx-item {
     display: flex; align-items: center; gap: 10px;
-    width: 100%; padding: 9px 12px;
-    border-radius: 9px;
+    width: 100%; padding: 9px 12px; border-radius: 9px;
     color: var(--text); font-size: 14px; font-weight: 500;
     text-align: left;
-    transition: background 0.1s;
   }
   .ctx-item:hover { background: var(--input-bg); }
   .ctx-item.danger { color: var(--red); }
-  .ctx-item .ico { width: 16px; height: 16px; flex: 0 0 16px; color: currentColor; opacity: 0.85; }
+  .ctx-item .ico { width: 16px; height: 16px; flex: 0 0 16px; opacity: 0.85; }
   .ctx-item .chev { margin-left: auto; opacity: 0.5; }
 
   .edit-sheet textarea.sheet-input { resize: vertical; min-height: 100px; padding: 12px 14px; height: auto; text-align: left; }
@@ -534,8 +525,6 @@
     0%,100% { filter: drop-shadow(0 0 5px rgba(10,132,255,0.45)); color: #7ab8ff; }
     50% { filter: drop-shadow(0 0 12px rgba(120,180,255,0.95)); color: #b7d6ff; }
   }
-  @keyframes ctx-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-  @keyframes ctx-in-sub { from { opacity: 0; transform: scale(0.97) translateX(-4px); } to { opacity: 1; transform: scale(1) translateX(0); } }
 
   .spinner {
     display: inline-block; width: 16px; height: 16px;
@@ -558,10 +547,10 @@
     #main-screen.chat-open .sidebar { transform: translateX(-30%); }
     #main-screen.chat-open .chat-pane { transform: translateX(0); }
     .back-btn { display: grid; }
-    .bubble-wrap { max-width: min(340px, 80vw) !important; }
-    .bubble { max-width: min(340px, 80vw) !important; font-size: 15.5px !important; }
+    .bubble-wrap { max-width: min(340px, 80vw); }
+    .bubble { font-size: 15.5px; }
     .sidebar-header { padding-top: 16px; }
-    .messages { padding: 14px 10px !important; }
+    .messages { padding: 14px 10px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -575,11 +564,19 @@
   <div class="blob b3"></div>
 </div>
 
-<div class="screen active" id="auth-screen">
+<!-- ============ РЕДИРЕКТ ============ -->
+<div class="screen" id="redirect-screen">
+  <div class="redirect-spinner"></div>
+  <div class="redirect-text">Загрузка…</div>
+</div>
+
+<!-- ============ АВТОРИЗАЦИЯ ============ -->
+<div class="screen" id="auth-screen">
   <div class="auth-card">
     <h1 class="auth-brand">message</h1>
     <div id="auth-alert" class="alert"></div>
 
+    <!-- LOGIN -->
     <section id="view-login">
       <div class="field-group">
         <div class="float-field">
@@ -597,9 +594,23 @@
         <div class="privacy-text">Данные аккаунта используются для безопасной авторизации и работы message</div>
       </div>
       <button class="btn btn-primary" id="login-btn" type="button" onclick="doLogin()">Продолжить</button>
-      <button class="btn-link" type="button" onclick="showRegister()">Создание Аккаунта message</button>
+      <button class="btn-link" type="button" onclick="navigate('/register')">Создание Аккаунта message</button>
     </section>
 
+    <!-- PASSWORD STEP -->
+    <section id="view-password" style="display:none">
+      <div class="field-group">
+        <div class="float-field">
+          <input id="login-password" type="password" placeholder=" " autocomplete="current-password" onkeydown="handleEnter(event, doLoginPassword)">
+          <label for="login-password">Пароль</label>
+          <button class="password-toggle" type="button" onclick="togglePassword('login-password', this)"></button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="password-btn" type="button" onclick="doLoginPassword()">Войти</button>
+      <button class="btn-link" type="button" onclick="navigate('/login')">Назад</button>
+    </section>
+
+    <!-- REGISTER -->
     <section id="view-register" style="display:none">
       <div class="field-group" style="margin-bottom:14px">
         <div class="float-field">
@@ -617,11 +628,25 @@
         </div>
       </div>
       <button class="btn btn-primary" id="register-btn" type="button" onclick="doRegister()">Создать и войти</button>
-      <button class="btn-link" type="button" onclick="showLogin()">У меня уже есть аккаунт</button>
+      <button class="btn-link" type="button" onclick="navigate('/login')">У меня уже есть аккаунт</button>
+    </section>
+
+    <!-- SUCCESS (после регистрации) -->
+    <section id="view-success" style="display:none">
+      <div class="success-id-box">
+        <span class="label">Ваш ID — сохраните его</span>
+        <div class="id" id="success-id">—</div>
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--text-2);line-height:1.5;margin:0 0 8px">
+        Этот ID понадобится для входа.<br>
+        Ссылка на ваш аккаунт: <b id="success-url" style="color:var(--blue)"></b>
+      </p>
+      <button class="btn btn-primary" type="button" onclick="enterMessenger()">Перейти в чаты</button>
     </section>
   </div>
 </div>
 
+<!-- ============ MAIN ============ -->
 <div class="screen" id="main-screen">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -704,7 +729,7 @@
       <div class="avatar" id="profile-avatar">?</div>
       <div>
         <div style="font-weight:600;font-size:15px" id="profile-name">—</div>
-        <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:13px;color:var(--text-2)" id="profile-id">ID: —</div>
+        <div style="font-size:13px;color:var(--text-2)" id="profile-id">ID: —</div>
       </div>
     </div>
     <input id="profile-name-input" class="sheet-input" type="text" placeholder="Ваше имя" maxlength="40">
@@ -740,6 +765,7 @@ const state = {
   me: null, chats: [], current: null,
   refreshTimer: null, pollTimer: null, lastMsgCount: 0,
   lastMessages: [], contextMsg: null, pendingReply: null, editingMsg: null,
+  pendingLogin: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -790,9 +816,16 @@ function alertBox(msg, success = false) {
   el.classList.add("show");
 }
 function hideAlert() { $("auth-alert").classList.remove("show"); }
+
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
+}
+function showAuthSection(sectionId) {
+  ["view-login", "view-password", "view-register", "view-success"].forEach(id => {
+    const el = $(id);
+    if (el) el.style.display = id === sectionId ? "" : "none";
+  });
 }
 function togglePassword(id, btn) {
   const input = $(id);
@@ -842,29 +875,83 @@ function fmtFullDate(ts) {
   return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-/* ================= ROUTING ================= */
-function getRouteUserId() {
+/* ================= ROUTER ================= */
+function navigate(path) {
+  history.pushState({}, "", path);
+  handleRoute();
+}
+function getRouteId() {
   const m = location.pathname.match(/^\/id(\d{6})$/);
   return m ? m[1] : null;
 }
-function goToLogin() {
-  if (location.pathname !== "/login") history.pushState({}, "", "/login");
+function handleRoute() {
+  const path = location.pathname;
+
+  // Если пользователь уже вошёл и открывает "/" или "/login" — показываем мессенджер
+  if (state.me && (path === "/" || path === "/login" || path === "/index.html")) {
+    showScreen("main-screen");
+    return;
+  }
+
+  // "/" — редирект на "/login"
+  if (path === "/" || path === "/index.html") {
+    showScreen("redirect-screen");
+    setTimeout(() => navigate("/login"), 400);
+    return;
+  }
+
+  // "/login"
+  if (path === "/login") {
+    showScreen("auth-screen");
+    showAuthSection("view-login");
+    hideAlert();
+    setTimeout(() => { const el = $("login-id"); if (el) el.focus(); }, 100);
+    return;
+  }
+
+  // "/register"
+  if (path === "/register") {
+    showScreen("auth-screen");
+    showAuthSection("view-register");
+    prepareRegister();
+    return;
+  }
+
+  // "/idXXXXXX"
+  const id = getRouteId();
+  if (id) {
+    showScreen("auth-screen");
+    showAuthSection("view-password");
+    hideAlert();
+    state.pendingLogin = { id, name: "" };
+    // подставим ID в скрытое поле, чтобы было видно
+    checkUserAndShowPassword(id);
+    return;
+  }
+
+  // всё остальное — на /login
+  navigate("/login");
 }
-function goToUserId(id) {
-  if (location.pathname !== "/id" + id) history.pushState({}, "", "/id" + id);
+
+async function checkUserAndShowPassword(id) {
+  try {
+    const r = await fetch("/api/user/" + id);
+    if (!r.ok) {
+      alertBox("Пользователь с таким ID не найден.");
+      showAuthSection("view-login");
+      history.replaceState({}, "", "/login");
+      setTimeout(() => { const el = $("login-id"); if (el) el.focus(); }, 100);
+      return;
+    }
+    const u = await r.json();
+    state.pendingLogin = { id, name: u.name };
+    setTimeout(() => { const el = $("login-password"); if (el) el.focus(); }, 100);
+  } catch {}
 }
 
 /* ================= AUTH ================= */
-function showLogin() {
+async function prepareRegister() {
   hideAlert();
-  $("view-register").style.display = "none";
-  $("view-login").style.display = "";
-  setTimeout(() => $("login-id").focus(), 100);
-}
-async function showRegister() {
-  hideAlert();
-  $("view-login").style.display = "none";
-  $("view-register").style.display = "";
   $("reg-id").value = "";
   $("reg-id").classList.remove("filled");
   try {
@@ -875,7 +962,6 @@ async function showRegister() {
   } catch { alertBox("Не удалось создать ID."); }
   setTimeout(() => $("reg-name").focus(), 100);
 }
-let pendingLogin = null;
 
 async function doLogin() {
   hideAlert();
@@ -888,30 +974,18 @@ async function doLogin() {
     const r = await fetch("/api/user/" + id);
     if (!r.ok) throw new Error("Пользователь с таким ID не найден");
     const u = await r.json();
-    showPasswordStep(id, u.name);
+    // переходим на /idXXXXXX
+    history.pushState({}, "", "/id" + id);
+    state.pendingLogin = { id, name: u.name };
+    showAuthSection("view-password");
+    setTimeout(() => $("login-password").focus(), 100);
   } catch (e) { alertBox(e.message); }
   finally { btn.disabled = false; btn.textContent = "Продолжить"; }
 }
 
-function showPasswordStep(id, name) {
-  hideAlert();
-  pendingLogin = { id, name };
-  $("view-login").innerHTML = `
-    <div class="field-group">
-      <div class="float-field">
-        <input id="login-password" type="password" placeholder=" " autocomplete="current-password" onkeydown="handleEnter(event, doLoginPassword)">
-        <label for="login-password">Пароль</label>
-      </div>
-    </div>
-    <button class="btn btn-primary" id="password-btn" type="button" onclick="doLoginPassword()">Продолжить</button>
-    <button class="btn-link" type="button" onclick="resetLoginForm()">Назад</button>
-  `;
-  setTimeout(() => $("login-password").focus(), 100);
-}
-
 async function doLoginPassword() {
   hideAlert();
-  if (!pendingLogin) return;
+  if (!state.pendingLogin) return;
   const password = $("login-password").value;
   if (!password) return alertBox("Введите пароль.");
   const btn = $("password-btn");
@@ -920,43 +994,21 @@ async function doLoginPassword() {
   try {
     const r = await fetch("/api/login", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: pendingLogin.id, password })
+      body: JSON.stringify({ id: state.pendingLogin.id, password })
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "Ошибка входа");
     state.me = { id: d.id, name: d.name, password };
-    goToUserId(d.id);
+    // URL уже /idXXXXXX
+    if (location.pathname !== "/id" + d.id) {
+      history.replaceState({}, "", "/id" + d.id);
+    }
     enterMessenger();
   } catch (e) {
     alertBox(e.message);
     btn.disabled = false;
-    btn.textContent = "Продолжить";
+    btn.textContent = "Войти";
   }
-}
-
-function resetLoginForm() {
-  hideAlert();
-  pendingLogin = null;
-  $("view-login").innerHTML = `
-    <div class="field-group">
-      <div class="float-field">
-        <input id="login-id" type="text" inputmode="numeric" maxlength="6" placeholder=" " autocomplete="username">
-        <label for="login-id">Ваш уникальный ID</label>
-      </div>
-    </div>
-    <div class="privacy-plate">
-      <div class="privacy-lock" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="11" width="16" height="10" rx="2.5"/>
-          <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
-        </svg>
-      </div>
-      <div class="privacy-text">Данные аккаунта используются для безопасной авторизации и работы message</div>
-    </div>
-    <button class="btn btn-primary" id="login-btn" type="button" onclick="doLogin()">Продолжить</button>
-    <button class="btn-link" type="button" onclick="showRegister()">Создание Аккаунта message</button>
-  `;
-  setTimeout(() => $("login-id").focus(), 100);
 }
 
 async function doRegister() {
@@ -983,8 +1035,12 @@ async function doRegister() {
       });
     }
     state.me = { id, name: name || ("Пользователь " + id), password };
-    goToUserId(id);
-    enterMessenger();
+
+    // показываем экран "сохраните ID" и меняем URL на /idXXXXXX
+    history.replaceState({}, "", "/id" + id);
+    $("success-id").textContent = id;
+    $("success-url").textContent = location.host + "/id" + id;
+    showAuthSection("view-success");
   } catch (e) { alertBox(e.message); }
   finally { btn.disabled = false; btn.textContent = "Создать и войти"; }
 }
@@ -992,12 +1048,12 @@ async function doRegister() {
 function logout() {
   stopTimers();
   state.me = null; state.current = null; state.chats = [];
-  state.lastMsgCount = 0; pendingLogin = null; state.pendingReply = null;
+  state.lastMsgCount = 0; state.pendingReply = null; state.pendingLogin = null;
   cancelReply();
   closeProfile(); closeEdit(); hideCtx();
-  showScreen("auth-screen");
-  goToLogin();
-  resetLoginForm();
+  // Очищаем URL и переходим на /login
+  history.replaceState({}, "", "/login");
+  handleRoute();
 }
 
 /* ================= MESSENGER ================= */
@@ -1160,7 +1216,7 @@ function renderMessages(msgs) {
     `;
   });
 
-  box.innerHTML = html || `<div class="empty" style="padding:40px 20px; text-align:center; align-self:center">Нет сообщений. Напишите первым 👋</div>`;
+  box.innerHTML = html || `<div class="empty" style="padding:40px 20px;text-align:center">Нет сообщений. Напишите первым 👋</div>`;
   if (wasAtBottom) box.scrollTop = box.scrollHeight;
   bindBubbleEvents();
 }
@@ -1210,6 +1266,7 @@ function cancelReply() {
   $("reply-bar").classList.remove("show");
 }
 
+/* ================= CONTEXT MENU ================= */
 function bindBubbleEvents() {
   document.querySelectorAll(".bubble").forEach(bubble => {
     const id = bubble.dataset.id;
@@ -1371,6 +1428,7 @@ async function saveEdit() {
   } catch {}
 }
 
+/* ================= NEW CHAT ================= */
 function openNewChat() {
   $("new-chat-id").value = "";
   $("new-chat-backdrop").classList.add("active");
@@ -1400,6 +1458,7 @@ function shake(el) {
   setTimeout(() => el.style.borderColor = "", 1200);
 }
 
+/* ================= PROFILE ================= */
 function openProfile() {
   if (!state.me) return;
   $("profile-avatar").textContent = initials(state.me.name);
@@ -1437,53 +1496,12 @@ async function saveName() {
 /* ================= BOOT ================= */
 window.addEventListener("DOMContentLoaded", () => {
   loadTheme();
-  // Никаких сохранённых сессий. Всегда показываем вход.
-  // Если в URL есть /idXXXXXX — всё равно сначала спрашиваем пароль для этого ID.
-  const routeId = getRouteUserId();
-  resetLoginForm();
-  if (routeId) {
-    // подставим ID и попросим пароль
-    setTimeout(async () => {
-      try {
-        const r = await fetch("/api/user/" + routeId);
-        if (r.ok) {
-          const u = await r.json();
-          showPasswordStep(routeId, u.name);
-        } else {
-          alertBox("Пользователь с таким ID не найден.");
-        }
-      } catch {}
-    }, 100);
-  } else {
-    goToLogin();
-  }
+  // Никаких сохранённых сессий — всегда через /login или /idXXXXXX
+  handleRoute();
 });
 
-// клик по кнопке назад/вперёд в браузере
 window.addEventListener("popstate", () => {
-  const routeId = getRouteUserId();
-  if (routeId) {
-    // пользователь открыл чужую ссылку — просим пароль
-    if (!state.me || state.me.id !== routeId) {
-      showScreen("auth-screen");
-      resetLoginForm();
-      setTimeout(async () => {
-        try {
-          const r = await fetch("/api/user/" + routeId);
-          if (r.ok) {
-            const u = await r.json();
-            showPasswordStep(routeId, u.name);
-          }
-        } catch {}
-      }, 50);
-    }
-  } else {
-    // /login или / — если залогинен, остаться; иначе показать вход
-    if (!state.me) {
-      showScreen("auth-screen");
-      resetLoginForm();
-    }
-  }
+  handleRoute();
 });
 </script>
 </body>
