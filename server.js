@@ -9,6 +9,15 @@ app.use(express.json());
 const ROOT = __dirname;
 const DB_FILE = path.join(ROOT, "users.json");
 
+// index.html лежит в папке public/
+const PUBLIC_DIR = path.join(ROOT, "public");
+const INDEX_FILE = path.join(PUBLIC_DIR, "index.html");
+
+console.log("ROOT:", ROOT);
+console.log("PUBLIC_DIR:", PUBLIC_DIR);
+console.log("INDEX_FILE:", INDEX_FILE);
+console.log("Index exists:", fs.existsSync(INDEX_FILE));
+
 function loadUsers() {
   if (!fs.existsSync(DB_FILE)) return {};
   try {
@@ -66,20 +75,25 @@ app.post("/api/login", (req, res) => {
 
 // --- Фронтенд ---
 
-// Отдаём index.html на любой путь, где нет API
-app.get("/", (req, res) => {
-  res.sendFile(path.join(ROOT, "index.html"));
+// Раздаём всё из папки public
+app.use(express.static(PUBLIC_DIR));
+
+// Главная и /index.html
+app.get(["/", "/index.html"], (req, res) => {
+  if (!fs.existsSync(INDEX_FILE)) {
+    return res.status(500).send(
+      "index.html не найден. Ожидался тут: " + INDEX_FILE
+    );
+  }
+  res.sendFile(INDEX_FILE);
 });
 
-app.get("/index.html", (req, res) => {
-  res.sendFile(path.join(ROOT, "index.html"));
-});
-
-app.use(express.static(ROOT));
-
-// Если ничего не совпало — отдаём index.html (чтобы не было "Cannot GET /")
+// Всё остальное — тоже index.html (чтобы не было "Cannot GET")
 app.use((req, res) => {
-  res.sendFile(path.join(ROOT, "index.html"));
+  if (fs.existsSync(INDEX_FILE)) {
+    return res.sendFile(INDEX_FILE);
+  }
+  res.status(404).send("Not found");
 });
 
 // --- Запуск ---
