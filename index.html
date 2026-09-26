@@ -21,18 +21,15 @@
 
   #auth-screen {
     align-items: center; justify-content: center; padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #0a84ff22, #000 70%);
+    background: radial-gradient(circle at 50% 30%, rgba(10,132,255,0.13), #000 70%);
   }
   .auth-card {
     width: min(100%, 400px); padding: 36px 28px 30px;
     border-radius: 28px; border: 1px solid rgba(255,255,255,0.10);
     background: linear-gradient(180deg, rgba(60,60,64,0.55), rgba(28,28,30,0.85));
     box-shadow: 0 40px 120px rgba(0,0,0,0.55);
-    animation: card-in 0.5s ease both;
   }
-  @keyframes card-in { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
   .auth-brand { text-align: center; font-size: 30px; font-weight: 700; margin: 0 0 26px; }
-
   .field-group { display: grid; gap: 12px; margin-bottom: 10px; }
   .float-field { position: relative; height: 58px; }
   .float-field input {
@@ -86,8 +83,7 @@
   }
   .alert {
     display: none; margin-bottom: 14px; padding: 11px 14px; border-radius: 12px;
-    font-size: 13px;
-    border: 1px solid rgba(255,69,58,0.25);
+    font-size: 13px; border: 1px solid rgba(255,69,58,0.25);
     background: rgba(255,69,58,0.10); color: #ff6961;
   }
   .alert.show { display: block; }
@@ -267,25 +263,6 @@
     background: rgba(118,118,128,0.20); color: #fff; outline: none; font-size: 15px;
     margin-bottom: 10px;
   }
-  .theme-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 12px 14px; border-radius: 14px;
-    background: rgba(118,118,128,0.20); border: 1px solid rgba(255,255,255,0.10); margin: 6px 0 14px;
-  }
-  .theme-row .label { font-size: 14px; font-weight: 500; color: #fff; }
-  .seg { display: inline-flex; background: rgba(120,120,128,0.20); border-radius: 10px; padding: 3px; position: relative; }
-  .seg button {
-    position: relative; z-index: 1; padding: 6px 14px;
-    font-size: 13px; font-weight: 600; color: #8e8e93; border-radius: 8px;
-  }
-  .seg button.active { color: #fff; }
-  .seg::before {
-    content: ""; position: absolute; top: 3px; bottom: 3px;
-    width: calc(50% - 3px); border-radius: 8px; background: #000;
-    transition: transform 0.25s ease;
-  }
-  .seg[data-active="dark"]::before { transform: translateX(100%); }
-  .seg[data-active="light"]::before { transform: translateX(0); }
 
   .spinner { display: inline-block; width: 16px; height: 16px;
     border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
@@ -309,7 +286,6 @@
 </head>
 <body>
 
-<!-- ЭКРАН 1: ВХОД -->
 <div class="screen active" id="auth-screen">
   <div class="auth-card">
     <h1 class="auth-brand">message</h1>
@@ -380,7 +356,6 @@
   </div>
 </div>
 
-<!-- ЭКРАН 2: ЧАТЫ -->
 <div class="screen" id="main-screen">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -439,7 +414,6 @@
   </section>
 </div>
 
-<!-- SHEETS -->
 <div class="sheet-backdrop" id="new-chat-backdrop" onclick="if(event.target===this)closeNewChat()">
   <div class="sheet">
     <h3>Новый чат</h3>
@@ -816,10 +790,17 @@ async function saveName() {
   } catch {}
 }
 
-// САМОЕ ВАЖНОЕ: при загрузке страницы — показываем ТОЛЬКО экран входа
+/* --- САМОЕ ГЛАВНОЕ: при загрузке — показываем ТОЛЬКО экран входа --- */
 window.addEventListener("DOMContentLoaded", () => {
-  showScreen("auth-screen");
-  showAuthSection("view-login");
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("auth-screen").classList.add("active");
+  ["view-password", "view-register", "view-success"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  const login = document.getElementById("view-login");
+  if (login) login.style.display = "";
+  setTimeout(() => { const el = $("login-id"); if (el) el.focus(); }, 100);
 });
 </script>
 </body>
