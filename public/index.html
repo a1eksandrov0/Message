@@ -1,196 +1,262 @@
-<!-- Модальное окно Входа / Регистрации -->
-<div id="auth-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
-  <div class="apple-card rounded-[28px] p-8 w-full max-w-[440px] shadow-2xl relative flex flex-col items-center text-left bg-[#1c1c1e] border border-white/10">
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message — Вход с Аккаунтом</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Стили Apple UI -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
-    <button onclick="hideAuthModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white transition text-lg w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">✕</button>
-
-    <!-- Точки в стиле Apple -->
-    <div class="flex gap-1.5 mb-6">
-      <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
-      <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-      <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-    </div>
-
-    <!-- Сообщение об ошибке -->
-    <div id="auth-error" class="text-red-400 text-xs mb-4 hidden w-full text-center px-3 py-2 bg-red-500/10 rounded-xl border border-red-500/20"></div>
-
-    <!-- Вью 1: ВХОД -->
-    <div id="login-view" class="w-full space-y-4">
-      <h2 class="text-2xl font-bold text-white text-center mb-6 tracking-tight">Вход с Аккаунтом Message</h2>
-
-      <div class="space-y-3">
-        <input id="login-id" type="text" placeholder="Введите ваш ID" class="w-full px-4 py-3.5 rounded-xl bg-[#2c2c2e] border border-white/15 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] font-mono text-sm transition">
-        <input id="login-password" type="password" placeholder="Пароль" class="w-full px-4 py-3.5 rounded-xl bg-[#2c2c2e] border border-white/15 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] text-sm transition">
-      </div>
-
-      <div class="pt-1">
-        <button type="button" onclick="switchToRegisterView()" class="text-[#007aff] hover:underline text-sm font-normal transition bg-transparent p-0 border-0 cursor-pointer">
-          Создание Аккаунта Message
-        </button>
-      </div>
-
-      <div class="pt-2 flex items-start gap-3">
-        <div class="text-[#007aff] flex-shrink-0 mt-0.5">
-          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86l4.65 4.65c.39.39 1.02.39 1.41 0l.71-.71c.39-.39.39-1.02 0-1.41L7.17 10.5c.32-2.03 1.83-3.66 3.83-4.25v2.25c0 .55.45 1 1 1s1-.45 1-1V6.25c2 .59 3.51 2.22 3.83 4.25l-3.65 3.65c-.39.39-.39 1.02 0 1.41l.71.71c.39.39 1.02.39 1.41 0l4.65-4.65c.03.28.05.57.05.86 0 4.41-3.59 8-8 8z"/>
-          </svg>
-        </div>
-        <p class="text-[11px] leading-relaxed text-gray-400 font-normal">
-          Сведения об аккаунте Message используются для обеспечения безопасного входа и сквозного шифрования данных. 
-          <a href="#" class="text-[#007aff] hover:underline">Управление данными...</a>
-        </p>
-      </div>
-
-      <div class="pt-4">
-        <button onclick="login()" class="w-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.98] text-white font-medium py-3.5 rounded-xl transition duration-150 text-sm shadow-lg">
-          Продолжить
-        </button>
-      </div>
-    </div>
-
-    <!-- Вью 2: СОЗДАНИЕ АККАУНТА (РЕГИСТРАЦИЯ) -->
-    <div id="register-view" class="w-full space-y-4 hidden">
-      <h2 class="text-2xl font-bold text-white text-center mb-6 tracking-tight">Создание Аккаунта Message</h2>
-
-      <div>
-        <label class="block text-xs text-gray-400 mb-1 pl-1">Ваш ID (сгенерирован автоматически):</label>
-        <input id="reg-generated-id" type="text" readonly class="w-full px-4 py-3.5 rounded-xl bg-[#2a2a2c] border border-white/10 text-[#007aff] font-mono text-center text-lg font-bold select-all cursor-not-allowed">
-      </div>
-
-      <div>
-        <label class="block text-xs text-gray-400 mb-1 pl-1">Придумайте пароль:</label>
-        <input id="reg-password" type="password" placeholder="Введите пароль" class="w-full px-4 py-3.5 rounded-xl bg-[#2c2c2e] border border-white/15 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] text-sm transition">
-      </div>
-
-      <div class="pt-1">
-        <button type="button" onclick="switchToLoginView()" class="text-[#007aff] hover:underline text-sm font-normal transition bg-transparent p-0 border-0 cursor-pointer">
-          Уже есть аккаунт? Войти
-        </button>
-      </div>
-
-      <div class="pt-4">
-        <button onclick="confirmRegistration()" class="w-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.98] text-white font-medium py-3.5 rounded-xl transition duration-150 text-sm shadow-lg">
-          Зарегистрироваться и войти
-        </button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-  let currentGeneratedId = null;
-
-  function showAuthModal() {
-    document.getElementById('auth-modal').classList.remove('hidden');
-    switchToLoginView();
-  }
-
-  function hideAuthModal() {
-    document.getElementById('auth-modal').classList.add('hidden');
-  }
-
-  function clearError() {
-    const errDiv = document.getElementById('auth-error');
-    errDiv.innerText = '';
-    errDiv.classList.add('hidden');
-  }
-
-  function showError(msg) {
-    const errDiv = document.getElementById('auth-error');
-    errDiv.innerText = msg;
-    errDiv.classList.remove('hidden');
-  }
-
-  // Нажатие на "Создание Аккаунта Message" — запрашивает ID и переключает вид
-  async function switchToRegisterView() {
-    clearError();
-    try {
-      const res = await fetch('/api/generate-id');
-      const data = await res.json();
-
-      if (data.error || !data.id) {
-        return showError('Не удалось сгенерировать ID');
-      }
-
-      currentGeneratedId = data.id;
-      document.getElementById('reg-generated-id').value = currentGeneratedId;
-      document.getElementById('reg-password').value = '';
-
-      document.getElementById('login-view').classList.add('hidden');
-      document.getElementById('register-view').classList.remove('hidden');
-    } catch (e) {
-      showError('Ошибка связи с сервером');
-    }
-  }
-
-  // Переключение обратно к форме входа
-  function switchToLoginView() {
-    clearError();
-    document.getElementById('register-view').classList.add('hidden');
-    document.getElementById('login-view').classList.remove('hidden');
-  }
-
-  // Регистрация с отображаемым ID
-  async function confirmRegistration() {
-    clearError();
-    const password = document.getElementById('reg-password').value.trim();
-
-    if (!password) {
-      return showError('Придумайте и введите пароль');
-    }
-    if (!currentGeneratedId) {
-      return showError('ID не сгенерирован');
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background-color: #000000;
+      color: #f5f5f7;
     }
 
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: currentGeneratedId, password })
-      });
+    /* Эффект матового стекла Apple */
+    .apple-glass {
+      background: rgba(28, 28, 30, 0.82) !important;
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Кастомные инпуты Apple */
+    .apple-input {
+      background-color: rgba(118, 118, 128, 0.18) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .apple-input:focus {
+      border-color: #0a84ff;
+      background-color: rgba(118, 118, 128, 0.25) !important;
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+    }
+
+    /* Синяя кнопка Apple */
+    .apple-button-primary {
+      background: #0071e3;
+      transition: all 0.15s ease;
+    }
+
+    .apple-button-primary:hover {
+      background: #0077ed;
+      transform: scale(1.01);
+    }
+
+    .apple-button-primary:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-4">
+
+  <!-- МОДАЛЬНОЕ ОКНО -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 z-50">
+    <div class="apple-glass rounded-[32px] p-8 w-full max-w-[420px] relative flex flex-col items-center text-left">
       
-      const data = await res.json();
+      <!-- Кнопка закрытия (Крестик) -->
+      <button onclick="hideAuthModal()" class="absolute top-5 right-5 text-[#86868b] hover:text-white transition w-7 h-7 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-xs font-semibold">✕</button>
 
-      if (data.error) {
-        return showError(data.error);
+      <!-- Декоративные точки Apple (иконка аккаунта) -->
+      <div class="flex items-center justify-center gap-1.5 mb-5">
+        <span class="w-3 h-3 rounded-full bg-[#ff3b30]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#ff9f0a]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#30d158]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#0a84ff]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#bf5af2]"></span>
+      </div>
+
+      <!-- Контейнер ошибок -->
+      <div id="auth-error" class="text-[#ff453a] text-xs mb-4 hidden w-full text-center px-3 py-2.5 bg-[#ff453a]/10 rounded-2xl border border-[#ff453a]/20 font-medium"></div>
+
+      <!-- ==================== ВЬЮ 1: ВХОД ==================== -->
+      <div id="login-view" class="w-full space-y-5">
+        <div class="text-center">
+          <h2 class="text-[23px] font-semibold text-[#f5f5f7] tracking-tight">Вход с Аккаунтом Message</h2>
+          <p class="text-[13px] text-[#86868b] mt-1 font-normal">Введите ваш персональный ID и пароль</p>
+        </div>
+
+        <div class="space-y-3">
+          <input id="login-id" type="text" placeholder="ID Message" class="apple-input w-full px-4 py-3.5 rounded-2xl text-sm font-mono placeholder-[#86868b] focus:outline-none">
+          <input id="login-password" type="password" placeholder="Пароль" class="apple-input w-full px-4 py-3.5 rounded-2xl text-sm placeholder-[#86868b] focus:outline-none">
+        </div>
+
+        <div class="text-center pt-1">
+          <button type="button" onclick="switchToRegisterView()" class="text-[#2997ff] hover:underline text-[13px] font-normal transition bg-transparent border-0 cursor-pointer">
+            Создание Аккаунта Message
+          </button>
+        </div>
+
+        <!-- Блок Конфиденциальности -->
+        <div class="pt-2 flex items-start gap-3 bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
+          <div class="text-[#2997ff] flex-shrink-0 mt-0.5">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86l4.65 4.65c.39.39 1.02.39 1.41 0l.71-.71c.39-.39.39-1.02 0-1.41L7.17 10.5c.32-2.03 1.83-3.66 3.83-4.25v2.25c0 .55.45 1 1 1s1-.45 1-1V6.25c2 .59 3.51 2.22 3.83 4.25l-3.65 3.65c-.39.39-.39 1.02 0 1.41l.71.71c.39.39 1.02.39 1.41 0l4.65-4.65c.03.28.05.57.05.86 0 4.41-3.59 8-8 8z"/>
+            </svg>
+          </div>
+          <p class="text-[11px] leading-relaxed text-[#86868b] font-normal">
+            Сведения об аккаунте Message используются для обеспечения безопасного входа и сквозного шифрования. 
+            <a href="#" class="text-[#2997ff] hover:underline">Подробнее...</a>
+          </p>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="login()" class="apple-button-primary w-full text-white font-medium py-3.5 rounded-2xl text-[14px] shadow-lg">
+            Продолжить
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== ВЬЮ 2: СОЗДАНИЕ АККАУНТА ==================== -->
+      <div id="register-view" class="w-full space-y-5 hidden">
+        <div class="text-center">
+          <h2 class="text-[23px] font-semibold text-[#f5f5f7] tracking-tight">Создание Аккаунта Message</h2>
+          <p class="text-[13px] text-[#86868b] mt-1 font-normal">Сохраните ваш уникальный ID</p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] uppercase tracking-wider text-[#86868b] mb-1.5 font-medium pl-1">Ваш новый ID Message</label>
+          <input id="reg-generated-id" type="text" readonly class="w-full px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-[#2997ff] font-mono text-center text-xl font-bold select-all cursor-not-allowed">
+        </div>
+
+        <div>
+          <label class="block text-[11px] uppercase tracking-wider text-[#86868b] mb-1.5 font-medium pl-1">Придумайте пароль</label>
+          <input id="reg-password" type="password" placeholder="Пароль" class="apple-input w-full px-4 py-3.5 rounded-2xl text-sm placeholder-[#86868b] focus:outline-none">
+        </div>
+
+        <div class="text-center pt-1">
+          <button type="button" onclick="switchToLoginView()" class="text-[#2997ff] hover:underline text-[13px] font-normal transition bg-transparent border-0 cursor-pointer">
+            Уже есть аккаунт? Войти
+          </button>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="confirmRegistration()" class="apple-button-primary w-full text-white font-medium py-3.5 rounded-2xl text-[14px] shadow-lg">
+            Зарегистрироваться и войти
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentGeneratedId = null;
+
+    function showAuthModal() {
+      document.getElementById('auth-modal').classList.remove('hidden');
+      switchToLoginView();
+    }
+
+    function hideAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function clearError() {
+      const errDiv = document.getElementById('auth-error');
+      errDiv.innerText = '';
+      errDiv.classList.add('hidden');
+    }
+
+    function showError(msg) {
+      const errDiv = document.getElementById('auth-error');
+      errDiv.innerText = msg;
+      errDiv.classList.remove('hidden');
+    }
+
+    async function switchToRegisterView() {
+      clearError();
+      try {
+        const res = await fetch('/api/generate-id');
+        const data = await res.json();
+
+        if (data.error || !data.id) {
+          return showError('Не удалось сгенерировать ID');
+        }
+
+        currentGeneratedId = data.id;
+        document.getElementById('reg-generated-id').value = currentGeneratedId;
+        document.getElementById('reg-password').value = '';
+
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('register-view').classList.remove('hidden');
+      } catch (e) {
+        showError('Ошибка связи с сервером');
+      }
+    }
+
+    function switchToLoginView() {
+      clearError();
+      document.getElementById('register-view').classList.add('hidden');
+      document.getElementById('login-view').classList.remove('hidden');
+    }
+
+    async function confirmRegistration() {
+      clearError();
+      const password = document.getElementById('reg-password').value.trim();
+
+      if (!password) {
+        return showError('Придумайте пароль');
+      }
+      if (!currentGeneratedId) {
+        return showError('ID не найден');
       }
 
-      myId = data.id;
-      hideAuthModal();
-      await openChatScreen();
-    } catch (e) {
-      showError('Ошибка соединения с сервером');
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: currentGeneratedId, password })
+        });
+        
+        const data = await res.json();
+
+        if (data.error) {
+          return showError(data.error);
+        }
+
+        hideAuthModal();
+        alert(`Успешно! Ваш ID: ${data.id}`);
+      } catch (e) {
+        showError('Ошибка соединения с сервером');
+      }
     }
-  }
 
-  // Вход
-  async function login() {
-    clearError();
-    const id = document.getElementById('login-id').value.trim();
-    const password = document.getElementById('login-password').value.trim();
+    async function login() {
+      clearError();
+      const id = document.getElementById('login-id').value.trim();
+      const password = document.getElementById('login-password').value.trim();
 
-    if (!id || !password) {
-      return showError('Введите ваш ID и пароль');
-    }
-
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, password })
-      });
-      const data = await res.json();
-
-      if (data.error) {
-        return showError(data.error);
+      if (!id || !password) {
+        return showError('Заполните ID и пароль');
       }
 
-      myId = data.id;
-      hideAuthModal();
-      await openChatScreen();
-    } catch (e) {
-      showError('Ошибка соединения с сервером');
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, password })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          return showError(data.error);
+        }
+
+        hideAuthModal();
+        alert(`Добро пожаловать, ID ${data.id}!`);
+      } catch (e) {
+        showError('Ошибка соединения с сервером');
+      }
     }
-  }
-</script>
+  </script>
+</body>
+</html>
