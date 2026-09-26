@@ -9,7 +9,7 @@
 <title>message</title>
 <style>
   :root, html[data-theme="dark"] {
-    --bg: #1c1c1e; --bg-2: #000; --bg-3: #2c2c2e; --bg-4: #3a3a3c;
+    --bg: #1c1c1e; --bg-2: #000; --bg-3: #2c2c2e;
     --nav-blur: rgba(28,28,30,0.78);
     --separator: rgba(255,255,255,0.10);
     --text: #fff; --text-2: #8e8e93; --text-3: #636366;
@@ -27,7 +27,7 @@
     --context-bg: rgba(44,44,46,0.92);
   }
   html[data-theme="light"] {
-    --bg: #f2f2f7; --bg-2: #fff; --bg-3: #e5e5ea; --bg-4: #d1d1d6;
+    --bg: #f2f2f7; --bg-2: #fff; --bg-3: #e5e5ea;
     --nav-blur: rgba(249,249,249,0.82);
     --separator: rgba(60,60,67,0.12);
     --text: #000; --text-2: #3c3c43; --text-3: #8e8e93;
@@ -55,7 +55,6 @@
     font-size: 15px; letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
-    transition: background 0.35s var(--ease), color 0.35s var(--ease);
   }
   button, input, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
   button { cursor: pointer; border: 0; background: transparent; }
@@ -83,21 +82,6 @@
 
   .screen { position: fixed; inset: 0; display: none; }
   .screen.active { display: flex; }
-
-  /* редирект-страница */
-  #redirect-screen {
-    align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px;
-    background: var(--bg-2);
-  }
-  .redirect-spinner {
-    width: 32px; height: 32px;
-    border: 3px solid rgba(255,255,255,0.15);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .redirect-text { color: var(--text-2); font-size: 14px; }
 
   #auth-screen { align-items: center; justify-content: center; padding: 24px; }
   .auth-card {
@@ -141,7 +125,6 @@
     width: 40px; height: 40px; display: grid; place-items: center;
     border-radius: 50%; color: var(--text-2);
   }
-  .password-toggle:hover { color: var(--text); background: rgba(120,120,128,0.15); }
   .password-toggle svg { width: 20px; height: 20px; }
   .privacy-plate {
     display: flex; gap: 12px; align-items: center;
@@ -158,12 +141,9 @@
   .privacy-lock svg { width: 20px; height: 20px; color: #7ab8ff;
     filter: drop-shadow(0 0 6px rgba(10,132,255,0.55));
     animation: lockGlow 3s ease-in-out infinite; position: relative; z-index: 1; }
-  .privacy-lock::after {
-    content: ""; position: absolute; inset: -40%;
-    background: conic-gradient(from 0deg, rgba(10,132,255,0) 0deg, rgba(10,132,255,0.55) 90deg, rgba(88,86,214,0.55) 180deg, rgba(10,132,255,0) 300deg, rgba(10,132,255,0) 360deg);
-    animation: spinSlow 6s linear infinite; opacity: 0.55; pointer-events: none;
-    mask: radial-gradient(circle, transparent 38%, #000 70%);
-    -webkit-mask: radial-gradient(circle, transparent 38%, #000 70%);
+  @keyframes lockGlow {
+    0%,100% { filter: drop-shadow(0 0 5px rgba(10,132,255,0.45)); color: #7ab8ff; }
+    50% { filter: drop-shadow(0 0 12px rgba(120,180,255,0.95)); color: #b7d6ff; }
   }
   .privacy-text { flex: 1; font-size: 12px; line-height: 1.45; color: var(--text-2); }
   .btn { width: 100%; height: 52px; border-radius: 14px; font-weight: 600; font-size: 16px;
@@ -171,7 +151,7 @@
   .btn:active { transform: scale(0.975); }
   .btn:disabled { opacity: 0.55; cursor: default; transform: none; }
   .btn-primary {
-    background: linear-gradient(180deg, var(--blue), color-mix(in srgb, var(--blue) 85%, #000));
+    background: linear-gradient(180deg, var(--blue), #0066ff);
     color: #fff;
     box-shadow: 0 10px 24px rgba(10,132,255,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
     margin-top: 16px;
@@ -185,10 +165,7 @@
     border: 1px solid rgba(255,69,58,0.25);
     background: rgba(255,69,58,0.10); color: #ff6961;
   }
-  .alert.show { display: block; animation: shake 0.35s; }
-  .alert.success {
-    border-color: rgba(48,209,88,0.25); background: rgba(48,209,88,0.10); color: #3ddb6b;
-  }
+  .alert.show { display: block; }
   .success-id-box {
     text-align: center;
     padding: 14px;
@@ -197,9 +174,7 @@
     border: 1px solid rgba(10,132,255,0.30);
     margin-bottom: 14px;
   }
-  .success-id-box .label {
-    display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6px;
-  }
+  .success-id-box .label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
   .success-id-box .id {
     font-size: 26px; font-weight: 700; letter-spacing: 0.2em;
     color: var(--blue); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -220,7 +195,6 @@
     background: linear-gradient(135deg, #5e5ce6, var(--blue));
     display: grid; place-items: center; color: #fff;
     font-size: 14px; font-weight: 600; flex: 0 0 34px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
     cursor: pointer; user-select: none;
   }
   .me-meta { flex: 1; min-width: 0; line-height: 1.15; }
@@ -230,10 +204,7 @@
   .header-action {
     width: 34px; height: 34px; border-radius: 50%;
     display: grid; place-items: center; color: var(--blue);
-    transition: background 0.15s, transform 0.15s;
   }
-  .header-action:hover { background: rgba(120,120,128,0.15); }
-  .header-action:active { transform: scale(0.92); }
   .header-action svg { width: 20px; height: 20px; }
   .sidebar-search { padding: 0 12px 10px; }
   .search {
@@ -243,34 +214,28 @@
   }
   .search svg { width: 15px; height: 15px; flex: 0 0 15px; }
   .search input { flex: 1; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 14px; }
-  .search input::placeholder { color: var(--text-3); }
   .chat-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 8px 20px; }
-  .chat-list::-webkit-scrollbar { width: 0; }
   .chat-row {
     display: flex; align-items: center; gap: 10px; padding: 8px 12px;
-    border-radius: 12px; cursor: pointer; transition: background 0.12s; position: relative;
+    border-radius: 12px; cursor: pointer;
   }
-  .chat-row:hover { background: rgba(120,120,128,0.10); }
   .chat-row.active {
-    background: linear-gradient(180deg, var(--blue), color-mix(in srgb, var(--blue) 85%, #000));
-    box-shadow: 0 8px 22px rgba(10,132,255,0.25), inset 0 1px 0 rgba(255,255,255,0.25);
+    background: linear-gradient(180deg, var(--blue), #0066ff);
+    box-shadow: 0 8px 22px rgba(10,132,255,0.25);
   }
   .chat-row.active .chat-last,
   .chat-row.active .chat-time,
   .chat-row.active .chat-name { color: #fff; }
   .unread-dot {
     flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--blue); box-shadow: 0 0 8px rgba(10,132,255,0.7);
-    visibility: hidden; margin-left: -2px;
+    background: var(--blue); visibility: hidden; margin-left: -2px;
   }
   .chat-row.has-unread .unread-dot { visibility: visible; }
-  .chat-row.active .unread-dot { background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
   .avatar {
     flex: 0 0 46px; width: 46px; height: 46px; border-radius: 50%;
     display: grid; place-items: center; font-size: 18px; font-weight: 500;
     color: #fff; background: linear-gradient(135deg, #5e5ce6, var(--blue));
-    user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.20);
-    text-transform: uppercase;
+    user-select: none; text-transform: uppercase;
   }
   .avatar-fav { background: linear-gradient(135deg, #ff9f0a, #ffd60a) !important; }
   .avatar-fav svg { width: 22px; height: 22px; color: #fff; }
@@ -303,22 +268,17 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chat-header-meta span { font-size: 12px; color: var(--text-2); }
 
-  /* ============ MESSAGES ============ */
   .messages {
     flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
     padding: 16px 14px;
     display: flex; flex-direction: column;
     align-items: stretch;
-    gap: 2px; scroll-behavior: smooth;
+    gap: 2px;
   }
-  .messages::-webkit-scrollbar { width: 0; }
-
   .msg-row {
     display: flex;
     width: 100%;
     padding: 1px 4px;
-    animation: msg-in 0.22s var(--ease);
-    position: relative;
   }
   .msg-row.me { justify-content: flex-end; }
   .msg-row:not(.me) { justify-content: flex-start; }
@@ -342,13 +302,10 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     cursor: default;
     display: inline-block;
+    max-width: min(420px, 65vw);
   }
   .msg-row:not(.me) .bubble { background: var(--bubble-other); color: var(--bubble-other-text); border-bottom-left-radius: 5px; }
-  .msg-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 5px;
-    box-shadow: 0 2px 6px rgba(10,132,255,0.25), inset 0 1px 0 rgba(255,255,255,0.18); }
-  .bubble::selection, .bubble *::selection { background: rgba(255,255,255,0.35); }
-  .msg-row:not(.me) .bubble::selection { background: rgba(10,132,255,0.35); }
-
+  .msg-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 5px; }
   .bubble-quote {
     border-left: 3px solid rgba(255,255,255,0.55);
     padding: 2px 0 2px 8px;
@@ -358,7 +315,6 @@
     opacity: 0.85;
     max-height: 60px;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
   .msg-row:not(.me) .bubble-quote { border-left-color: var(--blue); }
 
@@ -391,18 +347,14 @@
     background: var(--input-bg); color: var(--text); outline: none;
     font-size: 15.5px; line-height: 1.35; resize: none;
   }
-  .composer-input:focus { border-color: var(--blue); background: var(--input-bg-hover); }
   .composer-input::placeholder { color: var(--text-3); }
   .send-btn {
     flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%;
-    background: linear-gradient(180deg, var(--blue), color-mix(in srgb, var(--blue) 85%, #000));
+    background: linear-gradient(180deg, var(--blue), #0066ff);
     display: grid; place-items: center; color: #fff;
     align-self: flex-end; margin-bottom: 3px;
-    box-shadow: 0 4px 12px rgba(10,132,255,0.35), inset 0 1px 0 rgba(255,255,255,0.30);
-    transition: transform 0.15s, opacity 0.15s, filter 0.15s;
   }
-  .send-btn:hover:not(:disabled) { filter: brightness(1.1); }
-  .send-btn:disabled { opacity: 0.4; transform: scale(0.9); box-shadow: none; }
+  .send-btn:disabled { opacity: 0.4; }
   .send-btn svg { width: 16px; height: 16px; }
 
   .reply-bar {
@@ -422,14 +374,13 @@
   }
 
   .pane-empty { flex: 1; display: grid; place-items: center; text-align: center; color: var(--text-2); padding: 24px; }
-  .pane-empty-inner { max-width: 320px; }
   .pane-empty-icon {
     width: 72px; height: 72px; border-radius: 20px;
     background: var(--input-bg); border: 1px solid var(--separator);
     display: grid; place-items: center; margin: 0 auto 18px; color: var(--text-2);
   }
   .pane-empty-icon svg { width: 34px; height: 34px; }
-  .pane-empty h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+  .pane-empty h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--text); }
   .pane-empty p { margin: 0; font-size: 14px; line-height: 1.45; }
 
   .sheet-backdrop {
@@ -442,8 +393,6 @@
     width: min(100%, 380px); padding: 24px; border-radius: 24px;
     background: linear-gradient(180deg, var(--card-bg-top), var(--card-bg-bottom));
     border: 1px solid var(--separator); box-shadow: var(--shadow-soft);
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
     animation: card-in 0.3s var(--ease);
   }
   .sheet h3 { margin: 0 0 6px; font-size: 19px; font-weight: 700; text-align: center; }
@@ -455,7 +404,6 @@
     text-align: center; letter-spacing: 0.15em; font-size: 20px; font-weight: 700;
     color: var(--blue);
   }
-  .sheet .input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
   .sheet .btn-primary { margin-top: 14px; }
   .avatar-preview {
     display: flex; justify-content: center; align-items: center; gap: 12px;
@@ -468,7 +416,6 @@
     background: var(--input-bg); color: var(--text); outline: none; font-size: 15px;
     margin-bottom: 10px;
   }
-  .sheet-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
 
   .theme-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -480,7 +427,7 @@
   .seg button {
     position: relative; z-index: 1; padding: 6px 14px;
     font-size: 13px; font-weight: 600; color: var(--text-2);
-    border-radius: 8px; transition: color 0.2s var(--ease);
+    border-radius: 8px;
   }
   .seg button.active { color: var(--text); }
   .seg::before {
@@ -508,23 +455,13 @@
     color: var(--text); font-size: 14px; font-weight: 500;
     text-align: left;
   }
-  .ctx-item:hover { background: var(--input-bg); }
   .ctx-item.danger { color: var(--red); }
   .ctx-item .ico { width: 16px; height: 16px; flex: 0 0 16px; opacity: 0.85; }
   .ctx-item .chev { margin-left: auto; opacity: 0.5; }
 
-  .edit-sheet textarea.sheet-input { resize: vertical; min-height: 100px; padding: 12px 14px; height: auto; text-align: left; }
-
   @keyframes card-in { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-  @keyframes msg-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes msg-out { to { opacity: 0; transform: scale(0.7) translateY(-10px); max-height: 0; padding: 0; margin: 0; } }
-  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  @keyframes msg-out { to { opacity: 0; transform: scale(0.7); max-height: 0; padding: 0; margin: 0; } }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes spinSlow { to { transform: rotate(360deg); } }
-  @keyframes lockGlow {
-    0%,100% { filter: drop-shadow(0 0 5px rgba(10,132,255,0.45)); color: #7ab8ff; }
-    50% { filter: drop-shadow(0 0 12px rgba(120,180,255,0.95)); color: #b7d6ff; }
-  }
 
   .spinner {
     display: inline-block; width: 16px; height: 16px;
@@ -536,7 +473,7 @@
   @media (max-width: 820px) {
     #main-screen { position: relative; display: block; }
     .sidebar {
-      position: absolute; inset: 0; width: 100%; flex: 1 1 100%;
+      position: absolute; inset: 0; width: 100%;
       border-right: 0; transition: transform 0.32s var(--ease);
       padding-top: env(safe-area-inset-top);
     }
@@ -548,35 +485,25 @@
     #main-screen.chat-open .chat-pane { transform: translateX(0); }
     .back-btn { display: grid; }
     .bubble-wrap { max-width: min(340px, 80vw); }
-    .bubble { font-size: 15.5px; }
+    .bubble { max-width: min(340px, 80vw); font-size: 15.5px; }
     .sidebar-header { padding-top: 16px; }
     .messages { padding: 14px 10px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 </style>
 </head>
 <body>
-  <div class="auth-bg" aria-hidden="true">
+
+<div class="auth-bg" aria-hidden="true">
   <div class="blob b1"></div>
   <div class="blob b2"></div>
   <div class="blob b3"></div>
 </div>
 
-<!-- ============ РЕДИРЕКТ ============ -->
-<div class="screen" id="redirect-screen">
-  <div class="redirect-spinner"></div>
-  <div class="redirect-text">Загрузка…</div>
-</div>
-
-<!-- ============ АВТОРИЗАЦИЯ ============ -->
-<div class="screen" id="auth-screen">
+<div class="screen active" id="auth-screen">
   <div class="auth-card">
     <h1 class="auth-brand">message</h1>
     <div id="auth-alert" class="alert"></div>
 
-    <!-- LOGIN -->
     <section id="view-login">
       <div class="field-group">
         <div class="float-field">
@@ -594,23 +521,21 @@
         <div class="privacy-text">Данные аккаунта используются для безопасной авторизации и работы message</div>
       </div>
       <button class="btn btn-primary" id="login-btn" type="button" onclick="doLogin()">Продолжить</button>
-      <button class="btn-link" type="button" onclick="navigate('/register')">Создание Аккаунта message</button>
+      <button class="btn-link" type="button" onclick="switchToRegister()">Создание Аккаунта message</button>
     </section>
 
-    <!-- PASSWORD STEP -->
     <section id="view-password" style="display:none">
       <div class="field-group">
-        <div class="float-field">
-          <input id="login-password" type="password" placeholder=" " autocomplete="current-password" onkeydown="handleEnter(event, doLoginPassword)">
+        <div class="float-field has-eye">
+          <input id="login-password" type="password" placeholder=" " autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLoginPassword();}">
           <label for="login-password">Пароль</label>
           <button class="password-toggle" type="button" onclick="togglePassword('login-password', this)"></button>
         </div>
       </div>
       <button class="btn btn-primary" id="password-btn" type="button" onclick="doLoginPassword()">Войти</button>
-      <button class="btn-link" type="button" onclick="navigate('/login')">Назад</button>
+      <button class="btn-link" type="button" onclick="showAuthSection('view-login')">Назад</button>
     </section>
 
-    <!-- REGISTER -->
     <section id="view-register" style="display:none">
       <div class="field-group" style="margin-bottom:14px">
         <div class="float-field">
@@ -622,16 +547,15 @@
           <label for="reg-name">Имя (необязательно)</label>
         </div>
         <div class="float-field has-eye">
-          <input id="reg-password" type="password" placeholder=" " autocomplete="new-password" onkeydown="handleEnter(event, doRegister)">
+          <input id="reg-password" type="password" placeholder=" " autocomplete="new-password" onkeydown="if(event.key==='Enter'){event.preventDefault();doRegister();}">
           <label for="reg-password">Пароль</label>
           <button class="password-toggle" type="button" onclick="togglePassword('reg-password', this)"></button>
         </div>
       </div>
       <button class="btn btn-primary" id="register-btn" type="button" onclick="doRegister()">Создать и войти</button>
-      <button class="btn-link" type="button" onclick="navigate('/login')">У меня уже есть аккаунт</button>
+      <button class="btn-link" type="button" onclick="showAuthSection('view-login')">У меня уже есть аккаунт</button>
     </section>
 
-    <!-- SUCCESS (после регистрации) -->
     <section id="view-success" style="display:none">
       <div class="success-id-box">
         <span class="label">Ваш ID — сохраните его</span>
@@ -646,7 +570,6 @@
   </div>
 </div>
 
-<!-- ============ MAIN ============ -->
 <div class="screen" id="main-screen">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -695,7 +618,7 @@
 
       <div class="reply-bar" id="reply-bar">
         <div class="txt" id="reply-text"></div>
-        <button class="close" type="button" onclick="cancelReply()" aria-label="Отменить ответ">
+        <button class="close" type="button" onclick="cancelReply()">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
       </div>
@@ -703,7 +626,7 @@
       <div class="composer">
         <textarea id="msg-input" class="composer-input" rows="1"
           placeholder="Текстовое сообщение" oninput="autoGrow(this)"
-          onkeydown="handleComposerKey(event)"></textarea>
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
         <button class="send-btn" id="send-btn" type="button" onclick="sendMessage()" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
         </button>
@@ -716,7 +639,7 @@
   <div class="sheet">
     <h3>Новый чат</h3>
     <p>Введите ID пользователя (6 цифр)</p>
-    <input id="new-chat-id" class="input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" onkeydown="handleEnter(event, startChatByID)">
+    <input id="new-chat-id" class="input" type="text" inputmode="numeric" maxlength="6" placeholder="000000">
     <button class="btn btn-primary" type="button" onclick="startChatByID()">Найти</button>
     <button class="btn-link" type="button" onclick="closeNewChat()">Отмена</button>
   </div>
@@ -746,16 +669,6 @@
   </div>
 </div>
 
-<div class="sheet-backdrop" id="edit-backdrop" onclick="if(event.target===this)closeEdit()">
-  <div class="sheet edit-sheet">
-    <h3>Редактировать сообщение</h3>
-    <p>Измените текст и сохраните</p>
-    <textarea id="edit-text" class="sheet-input" rows="4"></textarea>
-    <button class="btn btn-primary" type="button" onclick="saveEdit()">Сохранить</button>
-    <button class="btn-link" type="button" onclick="closeEdit()">Отмена</button>
-  </div>
-</div>
-
 <div class="ctx-menu" id="ctx-main"></div>
 <div class="ctx-menu sub" id="ctx-sub"></div>
 
@@ -764,7 +677,7 @@
 const state = {
   me: null, chats: [], current: null,
   refreshTimer: null, pollTimer: null, lastMsgCount: 0,
-  lastMessages: [], contextMsg: null, pendingReply: null, editingMsg: null,
+  lastMessages: [], pendingReply: null,
   pendingLogin: null,
 };
 
@@ -807,21 +720,18 @@ const ICO_STAR = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l
 document.querySelectorAll(".password-toggle").forEach(b => b.innerHTML = EYE);
 
 /* ============ HELPERS ============ */
-function alertBox(msg, success = false) {
+function alertBox(msg) {
   const el = $("auth-alert");
   el.textContent = msg;
-  el.classList.toggle("success", success);
-  el.classList.remove("show");
-  void el.offsetWidth;
   el.classList.add("show");
 }
 function hideAlert() { $("auth-alert").classList.remove("show"); }
-
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
 }
 function showAuthSection(sectionId) {
+  hideAlert();
   ["view-login", "view-password", "view-register", "view-success"].forEach(id => {
     const el = $(id);
     if (el) el.style.display = id === sectionId ? "" : "none";
@@ -833,18 +743,10 @@ function togglePassword(id, btn) {
   input.type = visible ? "password" : "text";
   btn.innerHTML = visible ? EYE : EYE_OFF;
 }
-function handleEnter(e, fn) { if (e.key === "Enter") { e.preventDefault(); fn(); } }
 function autoGrow(el) {
   el.style.height = "auto";
   el.style.height = Math.min(el.scrollHeight, 140) + "px";
-  updateSendButton();
-}
-function updateSendButton() {
-  const hasText = $("msg-input").value.trim().length > 0;
-  $("send-btn").disabled = !hasText;
-}
-function handleComposerKey(e) {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  $("send-btn").disabled = !el.value.trim();
 }
 function fmtListTime(ts) {
   if (!ts) return "";
@@ -875,92 +777,16 @@ function fmtFullDate(ts) {
   return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-/* ================= ROUTER ================= */
-function navigate(path) {
-  history.pushState({}, "", path);
-  handleRoute();
-}
-function getRouteId() {
-  const m = location.pathname.match(/^\/id(\d{6})$/);
-  return m ? m[1] : null;
-}
-function handleRoute() {
-  const path = location.pathname;
-
-  // Если пользователь уже вошёл и открывает "/" или "/login" — показываем мессенджер
-  if (state.me && (path === "/" || path === "/login" || path === "/index.html")) {
-    showScreen("main-screen");
-    return;
-  }
-
-  // "/" — редирект на "/login"
-  if (path === "/" || path === "/index.html") {
-    showScreen("redirect-screen");
-    setTimeout(() => navigate("/login"), 400);
-    return;
-  }
-
-  // "/login"
-  if (path === "/login") {
-    showScreen("auth-screen");
-    showAuthSection("view-login");
-    hideAlert();
-    setTimeout(() => { const el = $("login-id"); if (el) el.focus(); }, 100);
-    return;
-  }
-
-  // "/register"
-  if (path === "/register") {
-    showScreen("auth-screen");
-    showAuthSection("view-register");
-    prepareRegister();
-    return;
-  }
-
-  // "/idXXXXXX"
-  const id = getRouteId();
-  if (id) {
-    showScreen("auth-screen");
-    showAuthSection("view-password");
-    hideAlert();
-    state.pendingLogin = { id, name: "" };
-    // подставим ID в скрытое поле, чтобы было видно
-    checkUserAndShowPassword(id);
-    return;
-  }
-
-  // всё остальное — на /login
-  navigate("/login");
-}
-
-async function checkUserAndShowPassword(id) {
-  try {
-    const r = await fetch("/api/user/" + id);
-    if (!r.ok) {
-      alertBox("Пользователь с таким ID не найден.");
-      showAuthSection("view-login");
-      history.replaceState({}, "", "/login");
-      setTimeout(() => { const el = $("login-id"); if (el) el.focus(); }, 100);
-      return;
-    }
-    const u = await r.json();
-    state.pendingLogin = { id, name: u.name };
-    setTimeout(() => { const el = $("login-password"); if (el) el.focus(); }, 100);
-  } catch {}
-}
-
-/* ================= AUTH ================= */
-async function prepareRegister() {
-  hideAlert();
+/* ============ AUTH ============ */
+function switchToRegister() {
+  showAuthSection("view-register");
   $("reg-id").value = "";
   $("reg-id").classList.remove("filled");
-  try {
-    const r = await fetch("/api/generate-id");
-    const d = await r.json();
+  fetch("/api/generate-id").then(r => r.json()).then(d => {
     $("reg-id").value = d.id;
     $("reg-id").classList.add("filled");
-  } catch { alertBox("Не удалось создать ID."); }
-  setTimeout(() => $("reg-name").focus(), 100);
+    setTimeout(() => $("reg-name").focus(), 100);
+  }).catch(() => alertBox("Не удалось создать ID."));
 }
 
 async function doLogin() {
@@ -974,8 +800,6 @@ async function doLogin() {
     const r = await fetch("/api/user/" + id);
     if (!r.ok) throw new Error("Пользователь с таким ID не найден");
     const u = await r.json();
-    // переходим на /idXXXXXX
-    history.pushState({}, "", "/id" + id);
     state.pendingLogin = { id, name: u.name };
     showAuthSection("view-password");
     setTimeout(() => $("login-password").focus(), 100);
@@ -999,10 +823,7 @@ async function doLoginPassword() {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "Ошибка входа");
     state.me = { id: d.id, name: d.name, password };
-    // URL уже /idXXXXXX
-    if (location.pathname !== "/id" + d.id) {
-      history.replaceState({}, "", "/id" + d.id);
-    }
+    try { history.replaceState({}, "", "/id" + d.id); } catch {}
     enterMessenger();
   } catch (e) {
     alertBox(e.message);
@@ -1035,9 +856,7 @@ async function doRegister() {
       });
     }
     state.me = { id, name: name || ("Пользователь " + id), password };
-
-    // показываем экран "сохраните ID" и меняем URL на /idXXXXXX
-    history.replaceState({}, "", "/id" + id);
+    try { history.replaceState({}, "", "/id" + id); } catch {}
     $("success-id").textContent = id;
     $("success-url").textContent = location.host + "/id" + id;
     showAuthSection("view-success");
@@ -1050,13 +869,13 @@ function logout() {
   state.me = null; state.current = null; state.chats = [];
   state.lastMsgCount = 0; state.pendingReply = null; state.pendingLogin = null;
   cancelReply();
-  closeProfile(); closeEdit(); hideCtx();
-  // Очищаем URL и переходим на /login
-  history.replaceState({}, "", "/login");
-  handleRoute();
+  closeProfile();
+  try { history.replaceState({}, "", "/login"); } catch {}
+  showScreen("auth-screen");
+  showAuthSection("view-login");
 }
 
-/* ================= MESSENGER ================= */
+/* ============ MESSENGER ============ */
 function enterMessenger() {
   $("me-avatar").textContent = initials(state.me.name);
   $("me-name").textContent = state.me.name || "—";
@@ -1076,7 +895,6 @@ function startTimers() {
 function stopTimers() {
   if (state.refreshTimer) clearInterval(state.refreshTimer);
   if (state.pollTimer) clearInterval(state.pollTimer);
-  state.refreshTimer = null; state.pollTimer = null;
 }
 
 async function loadChats() {
@@ -1108,7 +926,7 @@ function renderChats() {
     const avatarInner = c.isFavorites ? ICO_STAR : escapeHtml(initials(c.name));
     return `
       <div class="chat-row ${active ? "active" : ""} ${unread}" onclick="openChat('${c.with}', '${escapeAttr(c.name)}', ${c.isFavorites ? "true" : "false"})">
-        <span class="unread-dot" aria-hidden="true"></span>
+        <span class="unread-dot"></span>
         <div class="avatar ${fav}">${avatarInner}</div>
         <div class="chat-info">
           <div class="chat-name">${escapeHtml(c.name)}</div>
@@ -1216,7 +1034,7 @@ function renderMessages(msgs) {
     `;
   });
 
-  box.innerHTML = html || `<div class="empty" style="padding:40px 20px;text-align:center">Нет сообщений. Напишите первым 👋</div>`;
+  box.innerHTML = html || `<div class="empty" style="padding:40px 20px;text-align:center">Нет сообщений</div>`;
   if (wasAtBottom) box.scrollTop = box.scrollHeight;
   bindBubbleEvents();
 }
@@ -1232,7 +1050,7 @@ async function sendMessage() {
   if (emptyEl) emptyEl.remove();
   const replyToId = state.pendingReply ? state.pendingReply.id : null;
   box.insertAdjacentHTML("beforeend", `
-    <div class="msg-row me" data-id="__pending">
+    <div class="msg-row me">
       <div class="bubble-wrap">
         <div class="bubble">
           ${replyToId && state.pendingReply ? `<div class="bubble-quote"><b style="font-weight:600">Вы</b> ${escapeHtml(state.pendingReply.text.slice(0,120))}</div>` : ""}
@@ -1266,16 +1084,15 @@ function cancelReply() {
   $("reply-bar").classList.remove("show");
 }
 
-/* ================= CONTEXT MENU ================= */
+/* ============ CONTEXT MENU ============ */
 function bindBubbleEvents() {
-  document.querySelectorAll(".bubble").forEach(bubble => {
+  document.querySelectorAll(".bubble[data-id]").forEach(bubble => {
     const id = bubble.dataset.id;
-    if (id === "__pending") return;
+    if (!id) return;
     bubble.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       const msg = state.lastMessages.find(m => m.id === id);
-      if (!msg) return;
-      showCtxMain(msg, e.clientX, e.clientY);
+      if (msg) showCtxMain(msg, e.clientX, e.clientY);
     });
     let pressTimer = null;
     bubble.addEventListener("touchstart", (e) => {
@@ -1287,18 +1104,15 @@ function bindBubbleEvents() {
     }, { passive: true });
     bubble.addEventListener("touchmove", () => clearTimeout(pressTimer), { passive: true });
     bubble.addEventListener("touchend", () => clearTimeout(pressTimer));
-    bubble.addEventListener("touchcancel", () => clearTimeout(pressTimer));
   });
 }
 
 function hideCtx() {
   $("ctx-main").classList.remove("show");
   $("ctx-sub").classList.remove("show");
-  state.contextMsg = null;
 }
 
 function showCtxMain(msg, x, y) {
-  state.contextMsg = msg;
   const menu = $("ctx-main");
   const items = [
     { id: "reply", ico: ICO_REPLY, label: "Ответить" },
@@ -1335,7 +1149,7 @@ function showCtxSub(msg, x, y) {
     { id: "date", ico: ICO_CLOCK, label: fmtFullDate(msg.time), disabled: true },
   ].filter(it => !it.onlyMine || mine);
   sub.innerHTML = items.map(it => `
-    <button class="ctx-item ${it.danger ? "danger" : ""}" data-act="${it.id}" ${it.disabled ? "disabled style=opacity:.7;cursor:default" : ""}>
+    <button class="ctx-item ${it.danger ? "danger" : ""}" data-act="${it.id}" ${it.disabled ? "disabled style=opacity:.7" : ""}>
       <span class="ico">${it.ico}</span>
       <span>${escapeHtml(it.label)}</span>
     </button>
@@ -1345,7 +1159,6 @@ function showCtxSub(msg, x, y) {
       const act = btn.dataset.act;
       if (act === "edit") { openEdit(msg); hideCtx(); }
       else if (act === "delete") { deleteMsg(msg); hideCtx(); }
-      else if (act === "date") return;
     };
   });
   positionMenu(sub, x + 230, y);
@@ -1357,12 +1170,11 @@ function positionMenu(menu, x, y) {
   menu.style.visibility = "hidden";
   menu.classList.add("show");
   const r = menu.getBoundingClientRect();
-  const pad = 8;
   let left = x, top = y;
-  if (left + r.width > window.innerWidth - pad) left = window.innerWidth - r.width - pad;
-  if (top + r.height > window.innerHeight - pad) top = window.innerHeight - r.height - pad;
-  if (left < pad) left = pad;
-  if (top < pad) top = pad;
+  if (left + r.width > window.innerWidth - 8) left = window.innerWidth - r.width - 8;
+  if (top + r.height > window.innerHeight - 8) top = window.innerHeight - r.height - 8;
+  if (left < 8) left = 8;
+  if (top < 8) top = 8;
   menu.style.left = left + "px";
   menu.style.top = top + "px";
   menu.style.visibility = "";
@@ -1371,9 +1183,6 @@ function positionMenu(menu, x, y) {
 document.addEventListener("click", (e) => {
   if (!$("ctx-main").contains(e.target) && !$("ctx-sub").contains(e.target)) hideCtx();
 });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideCtx(); });
-window.addEventListener("scroll", hideCtx, true);
-window.addEventListener("resize", hideCtx);
 
 async function copyMsg(msg) {
   try { await navigator.clipboard.writeText(msg.text || ""); }
@@ -1404,31 +1213,8 @@ async function deleteMsg(msg) {
     setTimeout(() => loadMessages(state.current.id), 280);
   } catch {}
 }
-function openEdit(msg) {
-  state.editingMsg = msg;
-  $("edit-text").value = msg.text || "";
-  $("edit-backdrop").classList.add("active");
-  setTimeout(() => $("edit-text").focus(), 100);
-}
-function closeEdit() {
-  $("edit-backdrop").classList.remove("active");
-  state.editingMsg = null;
-}
-async function saveEdit() {
-  if (!state.editingMsg) return;
-  const text = $("edit-text").value.trim();
-  if (!text) return;
-  try {
-    await fetch("/api/messages/edit", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ me: state.me.id, other: state.current.id, id: state.editingMsg.id, text })
-    });
-    closeEdit();
-    loadMessages(state.current.id);
-  } catch {}
-}
 
-/* ================= NEW CHAT ================= */
+/* ============ NEW CHAT ============ */
 function openNewChat() {
   $("new-chat-id").value = "";
   $("new-chat-backdrop").classList.add("active");
@@ -1438,8 +1224,7 @@ function closeNewChat() { $("new-chat-backdrop").classList.remove("active"); }
 
 async function startChatByID() {
   const id = $("new-chat-id").value.trim();
-  if (!/^\d{6}$/.test(id)) { shake($("new-chat-id")); return; }
-  if (id === state.me.id) { shake($("new-chat-id")); return; }
+  if (!/^\d{6}$/.test(id) || id === state.me.id) return;
   try {
     const r = await fetch("/api/user/" + id);
     if (!r.ok) throw new Error("not found");
@@ -1447,18 +1232,10 @@ async function startChatByID() {
     closeNewChat();
     openChat(u.id, u.name);
     loadChats();
-  } catch { shake($("new-chat-id")); }
-}
-function shake(el) {
-  el.style.borderColor = "rgba(255,69,58,.7)";
-  el.animate([
-    { transform: "translateX(0)" }, { transform: "translateX(-5px)" },
-    { transform: "translateX(5px)" }, { transform: "translateX(0)" },
-  ], { duration: 300 });
-  setTimeout(() => el.style.borderColor = "", 1200);
+  } catch {}
 }
 
-/* ================= PROFILE ================= */
+/* ============ PROFILE ============ */
 function openProfile() {
   if (!state.me) return;
   $("profile-avatar").textContent = initials(state.me.name);
@@ -1493,15 +1270,14 @@ async function saveName() {
   } catch {}
 }
 
-/* ================= BOOT ================= */
+/* ============ BOOT ============ */
 window.addEventListener("DOMContentLoaded", () => {
   loadTheme();
-  // Никаких сохранённых сессий — всегда через /login или /idXXXXXX
-  handleRoute();
-});
-
-window.addEventListener("popstate", () => {
-  handleRoute();
+  // Всегда показываем экран входа. Никаких авто-восстановлений.
+  showScreen("auth-screen");
+  showAuthSection("view-login");
+  try { history.replaceState({}, "", "/login"); } catch {}
+  setTimeout(() => { const el = $("login-id"); if (el) el.focus(); }, 100);
 });
 </script>
 </body>
