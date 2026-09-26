@@ -22,18 +22,9 @@ function loadDB() {
     return { users: {}, chats: {} };
   }
 }
-
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-}
-
-function hash(p) {
-  return crypto.createHash("sha256").update(p).digest("hex");
-}
-
-function chatKey(a, b) {
-  return [a, b].sort().join("_");
-}
+function saveDB(db) { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)); }
+function hash(p) { return crypto.createHash("sha256").update(p).digest("hex"); }
+function chatKey(a, b) { return [a, b].sort().join("_"); }
 
 // --- API ---
 
@@ -42,8 +33,7 @@ app.get("/api/generate-id", (req, res) => {
   let id, tries = 0;
   do {
     id = String(Math.floor(100000 + Math.random() * 900000));
-    tries++;
-    if (tries > 2000) return res.status(500).json({ error: "Ошибка генерации ID" });
+    if (++tries > 2000) return res.status(500).json({ error: "Ошибка генерации ID" });
   } while (db.users[id]);
   res.json({ id });
 });
@@ -65,32 +55,27 @@ app.post("/api/login", (req, res) => {
   const { id, password } = req.body || {};
   const db = loadDB();
   const user = db.users[id];
-  if (!user || user.password !== hash(password)) {
-    return res.status(401).json({ error: "Неверный ID или пароль" });
-  }
+  if (!user || user.password !== hash(password)) return res.status(401).json({ error: "Неверный ID или пароль" });
   res.json({ id, name: user.name || ("Пользователь " + id) });
 });
 
-// Поиск пользователя по ID
 app.get("/api/user/:id", (req, res) => {
   const db = loadDB();
-  const user = db.users[req.params.id];
-  if (!user) return res.status(404).json({ error: "Пользователь не найден" });
-  res.json({ id: req.params.id, name: user.name || ("Пользователь " + req.params.id) });
+  const u = db.users[req.params.id];
+  if (!u) return res.status(404).json({ error: "Пользователь не найден" });
+  res.json({ id: req.params.id, name: u.name || ("Пользователь " + req.params.id) });
 });
 
-// Сохранить имя
 app.post("/api/user/name", (req, res) => {
   const { id, password, name } = req.body || {};
   const db = loadDB();
-  const user = db.users[id];
-  if (!user || user.password !== hash(password)) return res.status(401).json({ error: "Не авторизован" });
-  user.name = String(name || "").slice(0, 40) || ("Пользователь " + id);
+  const u = db.users[id];
+  if (!u || u.password !== hash(password)) return res.status(401).json({ error: "Не авторизован" });
+  u.name = String(name || "").slice(0, 40) || ("Пользователь " + id);
   saveDB(db);
-  res.json({ id, name: user.name });
+  res.json({ id, name: u.name });
 });
 
-// Получить список диалогов пользователя
 app.get("/api/chats/:id", (req, res) => {
   const db = loadDB();
   const me = req.params.id;
@@ -101,25 +86,35 @@ app.get("/api/chats/:id", (req, res) => {
     const other = a === me ? b : a;
     const msgs = db.chats[key];
     const last = msgs[msgs.length - 1];
+    const unread = msgs.filter(m => m.to === me && !m.read).length;
     result.push({
       with: other,
       name: (db.users[other] && db.users[other].name) || ("Пользователь " + other),
       last: last ? last.text : "",
+      lastFromMe: last ? last.from === me : false,
       time: last ? last.time : 0,
+      unread
     });
   }
   result.sort((x, y) => y.time - x.time);
   res.json(result);
 });
 
-// Получить сообщения диалога
 app.get("/api/messages/:me/:other", (req, res) => {
   const db = loadDB();
   const key = chatKey(req.params.me, req.params.other);
-  res.json(db.chats[key] || []);
+  const msgs = db.chats[key] || [];
+
+  // помечаем входящие как прочитанные
+  let changed = false;
+  msgs.forEach(m => {
+    if (m.to === req.params.me && !m.read) { m.read = true; changed = true; }
+  });
+  if (changed) saveDB(db);
+
+  res.json(msgs);
 });
 
-// Отправить сообщение
 app.post("/api/messages", (req, res) => {
   const { from, to, text } = req.body || {};
   if (!from || !to || !text) return res.status(400).json({ error: "Нужны from, to, text" });
@@ -127,21 +122,18 @@ app.post("/api/messages", (req, res) => {
   if (!db.users[from] || !db.users[to]) return res.status(404).json({ error: "Пользователь не найден" });
   const key = chatKey(from, to);
   if (!db.chats[key]) db.chats[key] = [];
-  const msg = { from, to, text: String(text).slice(0, 2000), time: Date.now() };
+  const msg = { from, to, text: String(text).slice(0, 2000), time: Date.now(), read: false };
   db.chats[key].push(msg);
   saveDB(db);
   res.json(msg);
 });
 
-// --- Фронтенд ---
-
+// --- Frontend ---
 app.use(express.static(PUBLIC_DIR));
-
 app.get(["/", "/index.html"], (req, res) => {
   if (!fs.existsSync(INDEX_FILE)) return res.status(500).send("index.html не найден");
   res.sendFile(INDEX_FILE);
 });
-
 app.use((req, res) => {
   if (fs.existsSync(INDEX_FILE)) return res.sendFile(INDEX_FILE);
   res.status(404).send("Not found");
