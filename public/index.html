@@ -1,262 +1,1682 @@
+```html
 <!DOCTYPE html>
 <html lang="ru" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Message — Вход с Аккаунтом</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Стили Apple UI -->
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#000000">
+
+  <title>Message — Аккаунт</title>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    
+    :root {
+      --bg: #000000;
+      --surface: rgba(28, 28, 30, 0.72);
+      --field: rgba(118, 118, 128, 0.18);
+      --field-hover: rgba(118, 118, 128, 0.24);
+
+      --text: #f5f5f7;
+      --secondary: rgba(235, 235, 245, 0.60);
+      --separator: rgba(255, 255, 255, 0.10);
+
+      --blue: #0a84ff;
+      --blue-hover: #409cff;
+      --red: #ff453a;
+      --green: #30d158;
+
+      --radius-xl: 28px;
+      --radius-lg: 16px;
+
+      --ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-      background-color: #000000;
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+
+      display: grid;
+      place-items: center;
+
+      padding: 24px;
+
+      color: var(--text);
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+
+      overflow: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =========================================================
+       BACKGROUND
+    ========================================================= */
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+
+      pointer-events: none;
+      overflow: hidden;
+
+      background:
+        radial-gradient(
+          circle at 50% 35%,
+          rgba(10, 132, 255, 0.075),
+          transparent 28%
+        ),
+        radial-gradient(
+          circle at 18% 85%,
+          rgba(88, 86, 214, 0.045),
+          transparent 25%
+        );
+    }
+
+    .ambient::after {
+      content: "";
+
+      position: absolute;
+      inset: -20%;
+
+      background:
+        radial-gradient(
+          circle at center,
+          transparent 35%,
+          rgba(0, 0, 0, 0.65) 100%
+        );
+    }
+
+    /* =========================================================
+       MAIN WINDOW
+    ========================================================= */
+
+    .modal {
+      position: relative;
+
+      width: min(100%, 430px);
+      max-height: calc(100dvh - 48px);
+
+      overflow: auto;
+
+      padding: 34px;
+
+      border: 1px solid rgba(255, 255, 255, 0.12);
+
+      border-radius: var(--radius-xl);
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(58, 58, 60, 0.42),
+          rgba(28, 28, 30, 0.76)
+        ),
+        var(--surface);
+
+      box-shadow:
+        0 40px 100px rgba(0, 0, 0, 0.62),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+
+      backdrop-filter:
+        blur(34px)
+        saturate(150%);
+
+      -webkit-backdrop-filter:
+        blur(34px)
+        saturate(150%);
+
+      animation:
+        modal-in 0.55s var(--ease) both;
+    }
+
+    .modal::before {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      border-radius: inherit;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          120deg,
+          rgba(255, 255, 255, 0.06),
+          transparent 35%
+        );
+    }
+
+    /* =========================================================
+       CLOSE BUTTON
+    ========================================================= */
+
+    .close {
+      position: absolute;
+
+      top: 18px;
+      right: 18px;
+
+      width: 32px;
+      height: 32px;
+
+      display: grid;
+      place-items: center;
+
+      border: 0;
+      border-radius: 50%;
+
+      color: rgba(235, 235, 245, 0.58);
+
+      background: rgba(118, 118, 128, 0.16);
+
+      cursor: pointer;
+
+      transition:
+        transform 0.2s var(--ease),
+        background 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .close:hover {
+      background: rgba(118, 118, 128, 0.28);
+      color: #ffffff;
+    }
+
+    .close:active {
+      transform: scale(0.90);
+    }
+
+    /* =========================================================
+       BRAND
+       ========================================================= */
+
+    .brand {
+      display: grid;
+      justify-items: center;
+
+      margin-bottom: 28px;
+    }
+
+    .brand-name {
+      margin: 0;
+
+      font-size: 16px;
+      font-weight: 600;
+
+      letter-spacing: -0.01em;
+
       color: #f5f5f7;
     }
 
-    /* Эффект матового стекла Apple */
-    .apple-glass {
-      background: rgba(28, 28, 30, 0.82) !important;
-      backdrop-filter: blur(25px) saturate(180%);
-      -webkit-backdrop-filter: blur(25px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    /* =========================================================
+       VIEWS
+    ========================================================= */
+
+    .view {
+      display: none;
+
+      animation:
+        view-in 0.38s var(--ease) both;
     }
 
-    /* Кастомные инпуты Apple */
-    .apple-input {
-      background-color: rgba(118, 118, 128, 0.18) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .view.active {
+      display: block;
+    }
+
+    /* =========================================================
+       HEADINGS
+    ========================================================= */
+
+    .heading {
+      text-align: center;
+
+      margin-bottom: 24px;
+    }
+
+    .heading h1 {
+      margin: 0;
+
+      font-size: 25px;
+      line-height: 1.15;
+
+      font-weight: 600;
+
+      letter-spacing: -0.025em;
+    }
+
+    .heading p {
+      margin: 8px 0 0;
+
+      color: var(--secondary);
+
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    /* =========================================================
+       INPUTS
+    ========================================================= */
+
+    .fields {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field {
+      position: relative;
+    }
+
+    .field input {
+      width: 100%;
+      height: 52px;
+
+      padding: 0 48px 0 16px;
+
+      border: 1px solid rgba(255, 255, 255, 0.08);
+
+      border-radius: var(--radius-lg);
+
+      outline: none;
+
       color: #ffffff;
-      transition: all 0.2s ease;
+
+      background: var(--field);
+
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
     }
 
-    .apple-input:focus {
-      border-color: #0a84ff;
-      background-color: rgba(118, 118, 128, 0.25) !important;
-      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+    .field input:hover {
+      background: var(--field-hover);
     }
 
-    /* Синяя кнопка Apple */
-    .apple-button-primary {
-      background: #0071e3;
-      transition: all 0.15s ease;
+    .field input:focus {
+      background: rgba(118, 118, 128, 0.23);
+
+      border-color: rgba(10, 132, 255, 0.9);
+
+      box-shadow:
+        0 0 0 3px rgba(10, 132, 255, 0.20);
     }
 
-    .apple-button-primary:hover {
-      background: #0077ed;
-      transform: scale(1.01);
+    .field input::placeholder {
+      color: rgba(235, 235, 245, 0.38);
     }
 
-    .apple-button-primary:active {
-      transform: scale(0.98);
-      opacity: 0.9;
+    /* =========================================================
+       GENERATED ID
+    ========================================================= */
+
+    .generated {
+      height: 58px !important;
+
+      padding: 0 16px !important;
+
+      text-align: center;
+
+      color: var(--blue) !important;
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+      font-size: 18px;
+
+      font-weight: 650;
+
+      letter-spacing: 0.02em;
+    }
+
+    .label {
+      display: block;
+
+      margin: 0 0 8px 4px;
+
+      color: var(--secondary);
+
+      font-size: 12px;
+
+      font-weight: 500;
+    }
+
+    /* =========================================================
+       ERROR
+    ========================================================= */
+
+    .error {
+      display: none;
+
+      margin: 0 0 14px;
+
+      padding: 11px 14px;
+
+      border:
+        1px solid rgba(255, 69, 58, 0.20);
+
+      border-radius: 14px;
+
+      color: #ff6961;
+
+      background: rgba(255, 69, 58, 0.09);
+
+      font-size: 13px;
+
+      line-height: 1.4;
+
+      animation:
+        shake 0.35s ease both;
+    }
+
+    .error.visible {
+      display: block;
+    }
+
+    /* =========================================================
+       PRIVACY
+    ========================================================= */
+
+    .privacy {
+      display: flex;
+
+      gap: 11px;
+
+      align-items: flex-start;
+
+      margin-top: 20px;
+
+      padding: 13px 14px;
+
+      border:
+        1px solid rgba(255, 255, 255, 0.055);
+
+      border-radius: 16px;
+
+      color: var(--secondary);
+
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .privacy svg {
+      flex: 0 0 20px;
+
+      margin-top: 1px;
+
+      color: var(--blue);
+    }
+
+    .privacy p {
+      margin: 0;
+
+      font-size: 11.5px;
+
+      line-height: 1.5;
+    }
+
+    a {
+      color: #2997ff;
+
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       PRIMARY BUTTON
+    ========================================================= */
+
+    .primary {
+      width: 100%;
+      height: 52px;
+
+      margin-top: 18px;
+
+      border: 0;
+
+      border-radius: 15px;
+
+      color: #ffffff;
+
+      background: var(--blue);
+
+      box-shadow:
+        0 8px 20px rgba(10, 132, 255, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+      font-size: 15px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      transition:
+        transform 0.18s var(--ease),
+        background 0.18s ease,
+        box-shadow 0.18s ease,
+        opacity 0.18s ease;
+    }
+
+    .primary:hover {
+      background: var(--blue-hover);
+
+      box-shadow:
+        0 10px 26px rgba(10, 132, 255, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .primary:active {
+      transform: scale(0.975);
+
+      box-shadow: none;
+    }
+
+    .primary:disabled {
+      opacity: 0.55;
+
+      cursor: default;
+
+      transform: none;
+    }
+
+    /* =========================================================
+       SECONDARY LINK
+    ========================================================= */
+
+    .secondary-link {
+      display: block;
+
+      width: fit-content;
+
+      margin: 18px auto 0;
+
+      padding: 5px 8px;
+
+      border: 0;
+
+      color: #2997ff;
+
+      background: transparent;
+
+      font-size: 13px;
+
+      cursor: pointer;
+    }
+
+    .secondary-link:active {
+      opacity: 0.55;
+    }
+
+    /* =========================================================
+       PASSWORD BUTTON
+    ========================================================= */
+
+    .password-toggle {
+      position: absolute;
+
+      top: 50%;
+      right: 12px;
+
+      width: 34px;
+      height: 34px;
+
+      transform: translateY(-50%);
+
+      display: grid;
+      place-items: center;
+
+      border: 0;
+
+      border-radius: 50%;
+
+      color: rgba(235, 235, 245, 0.48);
+
+      background: transparent;
+
+      cursor: pointer;
+    }
+
+    .password-toggle:hover {
+      color: #ffffff;
+
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .password-toggle svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* =========================================================
+       LOADING
+    ========================================================= */
+
+    .spinner {
+      display: inline-block;
+
+      width: 17px;
+      height: 17px;
+
+      margin-right: 8px;
+
+      vertical-align: -3px;
+
+      border:
+        2px solid rgba(255, 255, 255, 0.38);
+
+      border-top-color: #ffffff;
+
+      border-radius: 50%;
+
+      animation:
+        spin 0.7s linear infinite;
+    }
+
+    /* =========================================================
+       ANIMATIONS
+    ========================================================= */
+
+    @keyframes modal-in {
+      from {
+        opacity: 0;
+
+        transform:
+          scale(0.96)
+          translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+
+        transform:
+          scale(1)
+          translateY(0);
+      }
+    }
+
+    @keyframes view-in {
+      from {
+        opacity: 0;
+
+        transform:
+          translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+
+        transform:
+          translateY(0);
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes shake {
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-4px);
+      }
+
+      75% {
+        transform: translateX(4px);
+      }
+    }
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 520px) {
+      body {
+        padding: 12px;
+      }
+
+      .modal {
+        padding: 28px 20px 22px;
+
+        border-radius: 24px;
+
+        max-height:
+          calc(100dvh - 24px);
+      }
+
+      .brand {
+        margin-bottom: 24px;
+      }
+
+      .heading h1 {
+        font-size: 23px;
+      }
+    }
+
+    /* =========================================================
+       REDUCED MOTION
+    ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
-<body class="bg-black text-white min-h-screen flex items-center justify-center p-4">
 
-  <!-- МОДАЛЬНОЕ ОКНО -->
-  <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 z-50">
-    <div class="apple-glass rounded-[32px] p-8 w-full max-w-[420px] relative flex flex-col items-center text-left">
-      
-      <!-- Кнопка закрытия (Крестик) -->
-      <button onclick="hideAuthModal()" class="absolute top-5 right-5 text-[#86868b] hover:text-white transition w-7 h-7 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-xs font-semibold">✕</button>
+<body>
 
-      <!-- Декоративные точки Apple (иконка аккаунта) -->
-      <div class="flex items-center justify-center gap-1.5 mb-5">
-        <span class="w-3 h-3 rounded-full bg-[#ff3b30]"></span>
-        <span class="w-3 h-3 rounded-full bg-[#ff9f0a]"></span>
-        <span class="w-3 h-3 rounded-full bg-[#30d158]"></span>
-        <span class="w-3 h-3 rounded-full bg-[#0a84ff]"></span>
-        <span class="w-3 h-3 rounded-full bg-[#bf5af2]"></span>
-      </div>
-
-      <!-- Контейнер ошибок -->
-      <div id="auth-error" class="text-[#ff453a] text-xs mb-4 hidden w-full text-center px-3 py-2.5 bg-[#ff453a]/10 rounded-2xl border border-[#ff453a]/20 font-medium"></div>
-
-      <!-- ==================== ВЬЮ 1: ВХОД ==================== -->
-      <div id="login-view" class="w-full space-y-5">
-        <div class="text-center">
-          <h2 class="text-[23px] font-semibold text-[#f5f5f7] tracking-tight">Вход с Аккаунтом Message</h2>
-          <p class="text-[13px] text-[#86868b] mt-1 font-normal">Введите ваш персональный ID и пароль</p>
-        </div>
-
-        <div class="space-y-3">
-          <input id="login-id" type="text" placeholder="ID Message" class="apple-input w-full px-4 py-3.5 rounded-2xl text-sm font-mono placeholder-[#86868b] focus:outline-none">
-          <input id="login-password" type="password" placeholder="Пароль" class="apple-input w-full px-4 py-3.5 rounded-2xl text-sm placeholder-[#86868b] focus:outline-none">
-        </div>
-
-        <div class="text-center pt-1">
-          <button type="button" onclick="switchToRegisterView()" class="text-[#2997ff] hover:underline text-[13px] font-normal transition bg-transparent border-0 cursor-pointer">
-            Создание Аккаунта Message
-          </button>
-        </div>
-
-        <!-- Блок Конфиденциальности -->
-        <div class="pt-2 flex items-start gap-3 bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
-          <div class="text-[#2997ff] flex-shrink-0 mt-0.5">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86l4.65 4.65c.39.39 1.02.39 1.41 0l.71-.71c.39-.39.39-1.02 0-1.41L7.17 10.5c.32-2.03 1.83-3.66 3.83-4.25v2.25c0 .55.45 1 1 1s1-.45 1-1V6.25c2 .59 3.51 2.22 3.83 4.25l-3.65 3.65c-.39.39-.39 1.02 0 1.41l.71.71c.39.39 1.02.39 1.41 0l4.65-4.65c.03.28.05.57.05.86 0 4.41-3.59 8-8 8z"/>
-            </svg>
-          </div>
-          <p class="text-[11px] leading-relaxed text-[#86868b] font-normal">
-            Сведения об аккаунте Message используются для обеспечения безопасного входа и сквозного шифрования. 
-            <a href="#" class="text-[#2997ff] hover:underline">Подробнее...</a>
-          </p>
-        </div>
-
-        <div class="pt-2">
-          <button onclick="login()" class="apple-button-primary w-full text-white font-medium py-3.5 rounded-2xl text-[14px] shadow-lg">
-            Продолжить
-          </button>
-        </div>
-      </div>
-
-      <!-- ==================== ВЬЮ 2: СОЗДАНИЕ АККАУНТА ==================== -->
-      <div id="register-view" class="w-full space-y-5 hidden">
-        <div class="text-center">
-          <h2 class="text-[23px] font-semibold text-[#f5f5f7] tracking-tight">Создание Аккаунта Message</h2>
-          <p class="text-[13px] text-[#86868b] mt-1 font-normal">Сохраните ваш уникальный ID</p>
-        </div>
-
-        <div>
-          <label class="block text-[11px] uppercase tracking-wider text-[#86868b] mb-1.5 font-medium pl-1">Ваш новый ID Message</label>
-          <input id="reg-generated-id" type="text" readonly class="w-full px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-[#2997ff] font-mono text-center text-xl font-bold select-all cursor-not-allowed">
-        </div>
-
-        <div>
-          <label class="block text-[11px] uppercase tracking-wider text-[#86868b] mb-1.5 font-medium pl-1">Придумайте пароль</label>
-          <input id="reg-password" type="password" placeholder="Пароль" class="apple-input w-full px-4 py-3.5 rounded-2xl text-sm placeholder-[#86868b] focus:outline-none">
-        </div>
-
-        <div class="text-center pt-1">
-          <button type="button" onclick="switchToLoginView()" class="text-[#2997ff] hover:underline text-[13px] font-normal transition bg-transparent border-0 cursor-pointer">
-            Уже есть аккаунт? Войти
-          </button>
-        </div>
-
-        <div class="pt-2">
-          <button onclick="confirmRegistration()" class="apple-button-primary w-full text-white font-medium py-3.5 rounded-2xl text-[14px] shadow-lg">
-            Зарегистрироваться и войти
-          </button>
-        </div>
-      </div>
-
-    </div>
+  <div
+    class="ambient"
+    aria-hidden="true">
   </div>
 
+
+  <main
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dialog-title">
+
+
+    <!-- CLOSE -->
+
+    <button
+      class="close"
+      type="button"
+      onclick="hideAuthModal()"
+      aria-label="Закрыть">
+
+      ×
+
+    </button>
+
+
+    <!-- BRAND -->
+
+    <div class="brand">
+
+      <p class="brand-name">
+        Message
+      </p>
+
+    </div>
+
+
+    <!-- ERROR -->
+
+    <div
+      id="auth-error"
+      class="error"
+      role="alert"
+      aria-live="polite">
+    </div>
+
+
+    <!-- =====================================================
+         LOGIN
+    ====================================================== -->
+
+    <section
+      id="login-view"
+      class="view active"
+      aria-labelledby="dialog-title">
+
+
+      <div class="heading">
+
+        <h1 id="dialog-title">
+          Вход в Аккаунт Message
+        </h1>
+
+        <p>
+          Введите ID и пароль, чтобы продолжить
+        </p>
+
+      </div>
+
+
+      <div class="fields">
+
+
+        <!-- ID -->
+
+        <div class="field">
+
+          <input
+            id="login-id"
+            type="text"
+            inputmode="text"
+            autocomplete="username"
+            placeholder="ID Message"
+            aria-label="ID Message">
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="field">
+
+          <input
+            id="login-password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Пароль"
+            aria-label="Пароль"
+            onkeydown="handleEnter(event, login)">
+
+
+          <button
+            class="password-toggle"
+            type="button"
+            onclick="togglePassword('login-password', this)"
+            aria-label="Показать пароль">
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- REGISTER -->
+
+      <button
+        class="secondary-link"
+        type="button"
+        onclick="switchToRegisterView()">
+
+        Создать Аккаунт Message
+
+      </button>
+
+
+      <!-- PRIVACY -->
+
+      <div class="privacy">
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true">
+
+          <path d="
+            M12 2
+            a7 7 0 0 0-7 7
+            v3H4
+            a2 2 0 0 0-2 2
+            v7
+            a2 2 0 0 0 2 2
+            h16
+            a2 2 0 0 0 2-2
+            v-7
+            a2 2 0 0 0-2-2
+            h-1
+            V9
+            a7 7 0 0 0-7-7Zm-5 10V9
+            a5 5 0 0 1 10 0
+            v3
+            H7Zm5 3
+            a2 2 0 0 1 1 3.73
+            V20h-2v-1.27
+            A2 2 0 0 1 12 15Z"/>
+        </svg>
+
+
+        <p>
+
+          Данные аккаунта используются
+          для безопасной авторизации
+          и работы Message.
+
+          <a
+            href="#"
+            onclick="return false">
+
+            Подробнее
+
+          </a>
+
+        </p>
+
+      </div>
+
+
+      <!-- LOGIN -->
+
+      <button
+        id="login-button"
+        class="primary"
+        type="button"
+        onclick="login()">
+
+        Продолжить
+
+      </button>
+
+    </section>
+
+
+    <!-- =====================================================
+         REGISTER
+    ====================================================== -->
+
+    <section
+      id="register-view"
+      class="view"
+      aria-labelledby="register-title">
+
+
+      <div class="heading">
+
+        <h1 id="register-title">
+          Создание Аккаунта
+        </h1>
+
+        <p>
+          Ваш уникальный ID будет создан автоматически
+        </p>
+
+      </div>
+
+
+      <div class="fields">
+
+
+        <!-- GENERATED ID -->
+
+        <div>
+
+          <label
+            class="label"
+            for="reg-generated-id">
+
+            Ваш ID Message
+
+          </label>
+
+
+          <input
+            id="reg-generated-id"
+            class="field generated"
+            type="text"
+            readonly
+            aria-readonly="true"
+            aria-label="Ваш ID Message">
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="field">
+
+          <label
+            class="label"
+            for="reg-password">
+
+            Пароль
+
+          </label>
+
+
+          <input
+            id="reg-password"
+            type="password"
+            autocomplete="new-password"
+            placeholder="Придумайте пароль"
+            aria-label="Пароль"
+            onkeydown="handleEnter(event, confirmRegistration)">
+
+
+          <button
+            class="password-toggle"
+            type="button"
+            onclick="togglePassword('reg-password', this)"
+            aria-label="Показать пароль">
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- LOGIN -->
+
+      <button
+        class="secondary-link"
+        type="button"
+        onclick="switchToLoginView()">
+
+        Уже есть аккаунт? Войти
+
+      </button>
+
+
+      <!-- REGISTER -->
+
+      <button
+        id="register-button"
+        class="primary"
+        type="button"
+        onclick="confirmRegistration()">
+
+        Создать и войти
+
+      </button>
+
+    </section>
+
+  </main>
+
+
   <script>
+
     let currentGeneratedId = null;
 
+
+    const $ = (id) =>
+      document.getElementById(id);
+
+
+    /* =====================================================
+       PASSWORD ICONS
+    ====================================================== */
+
+    const eyeIcon = `
+
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true">
+
+        <path
+          d="
+            M2 12
+            s3.5-6 10-6
+            10 6 10 6
+            -3.5 6-10 6
+            S2 12 2 12Z"/>
+
+        <circle
+          cx="12"
+          cy="12"
+          r="2.5"/>
+
+      </svg>
+
+    `;
+
+
+    const eyeOffIcon = `
+
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true">
+
+        <path d="m3 3 18 18"/>
+
+        <path
+          d="
+            M10.6 5.1
+            A10.9 10.9 0 0 1 12 5
+            c6.5 0 10 7 10 7
+            s-3.5 7-10 7
+            c-1.5 0-2.8-.4-4-.9"/>
+
+        <path
+          d="
+            M6.6 6.6
+            C3.7 8.3 2 12 2 12
+            s3.5 7 10 7
+            c1.5 0 2.8-.4 4-.9"/>
+
+        <path
+          d="
+            M9.9 9.9
+            a3 3 0 0 0 4.2 4.2"/>
+
+      </svg>
+
+    `;
+
+
+    document
+      .querySelectorAll(".password-toggle")
+      .forEach(button => {
+
+        button.innerHTML = eyeIcon;
+
+      });
+
+
+    /* =====================================================
+       MODAL
+    ====================================================== */
+
     function showAuthModal() {
-      document.getElementById('auth-modal').classList.remove('hidden');
+
+      const modal =
+        document.querySelector(".modal");
+
+      modal.style.animation = "none";
+
+      requestAnimationFrame(() => {
+
+        modal.style.animation = "";
+
+      });
+
       switchToLoginView();
+
     }
+
 
     function hideAuthModal() {
-      document.getElementById('auth-modal').classList.add('hidden');
+
+      document
+        .activeElement
+        ?.blur();
+
     }
+
+
+    /* =====================================================
+       ERRORS
+    ====================================================== */
 
     function clearError() {
-      const errDiv = document.getElementById('auth-error');
-      errDiv.innerText = '';
-      errDiv.classList.add('hidden');
+
+      const error =
+        $("auth-error");
+
+      error.textContent = "";
+
+      error.classList.remove("visible");
+
     }
 
-    function showError(msg) {
-      const errDiv = document.getElementById('auth-error');
-      errDiv.innerText = msg;
-      errDiv.classList.remove('hidden');
+
+    function showError(message) {
+
+      const error =
+        $("auth-error");
+
+      error.style.color = "";
+      error.style.background = "";
+      error.style.borderColor = "";
+
+      error.textContent =
+        message;
+
+      error.classList.remove("visible");
+
+      void error.offsetWidth;
+
+      error.classList.add("visible");
+
     }
 
-    async function switchToRegisterView() {
+
+    /* =====================================================
+       VIEW SWITCH
+    ====================================================== */
+
+    function switchToRegisterView() {
+
       clearError();
-      try {
-        const res = await fetch('/api/generate-id');
-        const data = await res.json();
 
-        if (data.error || !data.id) {
-          return showError('Не удалось сгенерировать ID');
-        }
+      $("login-view")
+        .classList
+        .remove("active");
 
-        currentGeneratedId = data.id;
-        document.getElementById('reg-generated-id').value = currentGeneratedId;
-        document.getElementById('reg-password').value = '';
+      $("register-view")
+        .classList
+        .add("active");
 
-        document.getElementById('login-view').classList.add('hidden');
-        document.getElementById('register-view').classList.remove('hidden');
-      } catch (e) {
-        showError('Ошибка связи с сервером');
-      }
+
+      generateId();
+
+
+      setTimeout(() => {
+
+        $("reg-password")
+          .focus();
+
+      }, 120);
+
     }
+
 
     function switchToLoginView() {
+
       clearError();
-      document.getElementById('register-view').classList.add('hidden');
-      document.getElementById('login-view').classList.remove('hidden');
+
+      $("register-view")
+        .classList
+        .remove("active");
+
+      $("login-view")
+        .classList
+        .add("active");
+
+
+      setTimeout(() => {
+
+        $("login-id")
+          .focus();
+
+      }, 120);
+
     }
+
+
+    /* =====================================================
+       GENERATE ID
+    ====================================================== */
+
+    async function generateId() {
+
+      const input =
+        $("reg-generated-id");
+
+
+      input.value =
+        "Создание…";
+
+
+      try {
+
+        const response =
+          await fetch("/api/generate-id");
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          data.error ||
+          !data.id
+        ) {
+
+          throw new Error(
+            "ID generation failed"
+          );
+
+        }
+
+
+        currentGeneratedId =
+          data.id;
+
+
+        input.value =
+          currentGeneratedId;
+
+
+      } catch {
+
+        currentGeneratedId =
+          null;
+
+        input.value =
+          "";
+
+
+        showError(
+          "Не удалось создать ID. Проверьте соединение и попробуйте снова."
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       LOADING
+    ====================================================== */
+
+    function setLoading(
+      button,
+      loading,
+      label
+    ) {
+
+      button.disabled =
+        loading;
+
+
+      button.innerHTML =
+        loading
+
+          ? `
+              <span
+                class="spinner"
+                aria-hidden="true">
+              </span>
+
+              ${label}
+            `
+
+          : label;
+
+    }
+
+
+    /* =====================================================
+       REGISTER
+    ====================================================== */
 
     async function confirmRegistration() {
+
       clearError();
-      const password = document.getElementById('reg-password').value.trim();
+
+
+      const password =
+        $("reg-password")
+          .value
+          .trim();
+
 
       if (!password) {
-        return showError('Придумайте пароль');
+
+        showError(
+          "Введите пароль."
+        );
+
+        $("reg-password")
+          .focus();
+
+        return;
+
       }
+
+
+      if (password.length < 6) {
+
+        showError(
+          "Пароль должен содержать минимум 6 символов."
+        );
+
+        $("reg-password")
+          .focus();
+
+        return;
+
+      }
+
+
       if (!currentGeneratedId) {
-        return showError('ID не найден');
+
+        showError(
+          "ID ещё не создан. Попробуйте ещё раз."
+        );
+
+        return;
+
       }
+
+
+      const button =
+        $("register-button");
+
+
+      setLoading(
+        button,
+        true,
+        "Создание…"
+      );
+
 
       try {
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: currentGeneratedId, password })
-        });
-        
-        const data = await res.json();
 
-        if (data.error) {
-          return showError(data.error);
+        const response =
+          await fetch(
+            "/api/register",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  id:
+                    currentGeneratedId,
+
+                  password
+                })
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          data.error
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Registration failed"
+          );
+
         }
 
-        hideAuthModal();
-        alert(`Успешно! Ваш ID: ${data.id}`);
-      } catch (e) {
-        showError('Ошибка соединения с сервером');
+
+        showSuccess(
+          `Аккаунт создан. Ваш ID: ${data.id}`
+        );
+
+
+        $("reg-password")
+          .value = "";
+
+
+      } catch (error) {
+
+        showError(
+          error.message ||
+          "Не удалось создать аккаунт."
+        );
+
+
+      } finally {
+
+        setLoading(
+          button,
+          false,
+          "Создать и войти"
+        );
+
       }
+
     }
+
+
+    /* =====================================================
+       LOGIN
+    ====================================================== */
 
     async function login() {
+
       clearError();
-      const id = document.getElementById('login-id').value.trim();
-      const password = document.getElementById('login-password').value.trim();
+
+
+      const id =
+        $("login-id")
+          .value
+          .trim();
+
+
+      const password =
+        $("login-password")
+          .value
+          .trim();
+
 
       if (!id || !password) {
-        return showError('Заполните ID и пароль');
+
+        showError(
+          "Введите ID и пароль."
+        );
+
+        return;
+
       }
+
+
+      const button =
+        $("login-button");
+
+
+      setLoading(
+        button,
+        true,
+        "Проверка…"
+      );
+
 
       try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, password })
-        });
-        const data = await res.json();
 
-        if (data.error) {
-          return showError(data.error);
+        const response =
+          await fetch(
+            "/api/login",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  id,
+                  password
+                })
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          data.error
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Login failed"
+          );
+
         }
 
-        hideAuthModal();
-        alert(`Добро пожаловать, ID ${data.id}!`);
-      } catch (e) {
-        showError('Ошибка соединения с сервером');
+
+        showSuccess(
+          `Добро пожаловать. ID ${data.id}`
+        );
+
+
+      } catch (error) {
+
+        showError(
+          error.message ||
+          "Не удалось выполнить вход."
+        );
+
+
+      } finally {
+
+        setLoading(
+          button,
+          false,
+          "Продолжить"
+        );
+
       }
+
     }
+
+
+    /* =====================================================
+       SUCCESS
+    ====================================================== */
+
+    function showSuccess(message) {
+
+      const error =
+        $("auth-error");
+
+
+      error.textContent =
+        message;
+
+
+      error.style.color =
+        "#30d158";
+
+
+      error.style.background =
+        "rgba(48,209,88,.09)";
+
+
+      error.style.borderColor =
+        "rgba(48,209,88,.20)";
+
+
+      error.classList.add(
+        "visible"
+      );
+
+
+      setTimeout(() => {
+
+        error.style.color =
+          "";
+
+        error.style.background =
+          "";
+
+        error.style.borderColor =
+          "";
+
+      }, 3000);
+
+    }
+
+
+    /* =====================================================
+       SHOW / HIDE PASSWORD
+    ====================================================== */
+
+    function togglePassword(
+      id,
+      button
+    ) {
+
+      const input =
+        $(id);
+
+
+      const visible =
+        input.type === "text";
+
+
+      input.type =
+        visible
+          ? "password"
+          : "text";
+
+
+      button.innerHTML =
+        visible
+          ? eyeIcon
+          : eyeOffIcon;
+
+
+      button.setAttribute(
+        "aria-label",
+        visible
+          ? "Показать пароль"
+          : "Скрыть пароль"
+      );
+
+    }
+
+
+    /* =====================================================
+       ENTER KEY
+    ====================================================== */
+
+    function handleEnter(
+      event,
+      action
+    ) {
+
+      if (
+        event.key === "Enter"
+      ) {
+
+        event.preventDefault();
+
+        action();
+
+      }
+
+    }
+
   </script>
+
 </body>
 </html>
+```
