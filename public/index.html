@@ -1,732 +1,708 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#000000">
-  <title>Message</title>
-  <style>
-    :root {
-      --bg: #000000;
-      --surface: rgba(28, 28, 30, 0.72);
-      --field: rgba(118, 118, 128, 0.18);
-      --field-hover: rgba(118, 118, 128, 0.24);
-      --text: #f5f5f7;
-      --secondary: rgba(235, 235, 245, 0.60);
-      --separator: rgba(255, 255, 255, 0.10);
-      --blue: #0a84ff;
-      --blue-hover: #409cff;
-      --green: #30d158;
-      --red: #ff453a;
-      --radius-xl: 28px;
-      --radius-lg: 16px;
-      --ease: cubic-bezier(.22, 1, .36, 1);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Сообщения</title>
+<style>
+  :root {
+    --bg: #000;
+    --bg2: #1c1c1e;
+    --bg3: #2c2c2e;
+    --separator: rgba(84, 84, 88, 0.36);
+    --text: #fff;
+    --text2: #8e8e93;
+    --text3: #636366;
+    --blue: #0a84ff;
+    --blue-ios: #007aff;
+    --green: #30d158;
+    --red: #ff453a;
+    --bubble-me: #0a84ff;
+    --bubble-other: #26262a;
+    --nav-blur: rgba(22, 22, 24, 0.78);
+    --radius-xl: 28px;
+    --radius-lg: 16px;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+      "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+  }
+
+  button, input, textarea {
+    font: inherit;
+    color: inherit;
+  }
+  button { cursor: pointer; border: 0; background: transparent; }
+
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+  }
+  .screen.active { display: flex; }
+
+  /* ============ AUTH ============ */
+  #auth-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 20%, #0a0a0f, #000 60%);
+  }
+
+  .auth-card {
+    width: min(100%, 400px);
+    padding: 32px 26px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(180deg, rgba(44, 44, 46, 0.65), rgba(28, 28, 30, 0.85));
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    animation: card-in 0.5s var(--ease) both;
+  }
+
+  .auth-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+
+  .auth-logo-icon {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #38d75a, #22b24c);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 30px rgba(48, 209, 88, 0.25);
+  }
+
+  .auth-logo-icon svg { width: 36px; height: 36px; color: #fff; }
+
+  .auth-title {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-align: center;
+  }
+
+  .auth-sub {
+    margin: 0 0 22px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .field-group { display: grid; gap: 10px; margin-bottom: 8px; }
+
+  .field-label {
+    font-size: 12px;
+    color: var(--text2);
+    margin: 0 0 6px 2px;
+    font-weight: 500;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input {
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    background: rgba(118, 118, 128, 0.20);
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .input:focus {
+    border-color: rgba(10, 132, 255, 0.9);
+    background: rgba(118, 118, 128, 0.26);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.18);
+  }
+  .input::placeholder { color: rgba(235, 235, 245, 0.35); }
+
+  .input.id-input {
+    text-align: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 20px;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    color: var(--blue);
+    padding: 0 16px;
+  }
+
+  .input.readonly {
+    background: rgba(10, 132, 255, 0.08);
+    border-color: rgba(10, 132, 255, 0.25);
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    color: var(--text2);
+  }
+  .password-toggle:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .password-toggle svg { width: 20px; height: 20px; }
+
+  .btn {
+    width: 100%;
+    height: 50px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform 0.15s var(--ease), background 0.15s, opacity 0.15s;
+  }
+  .btn:active { transform: scale(0.975); }
+  .btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+  .btn-primary {
+    background: var(--blue-ios);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(10, 132, 255, 0.22);
+    margin-top: 14px;
+  }
+
+  .btn-link {
+    margin: 16px auto 0;
+    display: block;
+    color: var(--blue-ios);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 10px;
+    width: fit-content;
+  }
+
+  .alert {
+    display: none;
+    margin-bottom: 14px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    border: 1px solid rgba(255, 69, 58, 0.25);
+    background: rgba(255, 69, 58, 0.10);
+    color: #ff6961;
+  }
+  .alert.show { display: block; animation: shake 0.35s; }
+  .alert.success {
+    border-color: rgba(48, 209, 88, 0.25);
+    background: rgba(48, 209, 88, 0.10);
+    color: #3ddb6b;
+  }
+
+  /* ============ NAV BAR (iOS) ============ */
+  .nav {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    padding: 0 12px;
+    background: var(--nav-blur);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border-bottom: 0.5px solid var(--separator);
+    position: relative;
+    z-index: 10;
+    padding-top: env(safe-area-inset-top);
+    height: calc(52px + env(safe-area-inset-top));
+  }
+
+  .nav-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .nav-btn {
+    color: var(--blue-ios);
+    font-size: 16px;
+    padding: 6px 8px;
+    min-width: 60px;
+    text-align: left;
+    font-weight: 400;
+  }
+  .nav-btn.right { text-align: right; }
+  .nav-btn.bold { font-weight: 600; }
+
+  /* ============ CHAT LIST ============ */
+  .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  .search-wrap {
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--separator);
+    background: var(--bg);
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: var(--bg3);
+    color: var(--text2);
+  }
+  .search svg { width: 16px; height: 16px; flex: 0 0 16px; }
+  .search input {
+    flex: 1;
+    border: 0; outline: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 16px;
+  }
+  .search input::placeholder { color: var(--text3); }
+
+  .chat-list { padding: 4px 0 20px; }
+
+  .chat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--separator);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .chat-row:active { background: var(--bg3); }
+
+  .avatar {
+    flex: 0 0 50px;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+    background: linear-gradient(135deg, #5e5ce6, #0a84ff);
+    user-select: none;
+  }
+
+  .chat-info { flex: 1; min-width: 0; }
+  .chat-name {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chat-last {
+    font-size: 14px;
+    color: var(--text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chat-time {
+    font-size: 13px;
+    color: var(--text2);
+    flex: 0 0 auto;
+    align-self: flex-start;
+    padding-top: 2px;
+    margin-left: 6px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text2);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ============ CONVERSATION ============ */
+  #chat-screen .nav { justify-content: space-between; }
+  #chat-screen .nav-title {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+  }
+  #chat-screen .nav-title small {
+    font-size: 11px;
+    color: var(--text2);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 12px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .msg-row {
+    display: flex;
+    justify-content: flex-start;
+    padding: 0 4px;
+    animation: msg-in 0.22s var(--ease);
+  }
+  .msg-row.me { justify-content: flex-end; }
+
+  .bubble {
+    max-width: 74%;
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+    line-height: 1.32;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    position: relative;
+  }
+
+  .msg-row:not(.me) .bubble {
+    background: var(--bubble-other);
+    color: #fff;
+    border-bottom-left-radius: 6px;
+  }
+  .msg-row.me .bubble {
+    background: var(--bubble-me);
+    color: #fff;
+    border-bottom-right-radius: 6px;
+  }
+
+  .msg-time {
+    font-size: 11px;
+    color: var(--text3);
+    text-align: center;
+    margin: 10px 0 6px;
+  }
+  .msg-time b { color: var(--text2); font-weight: 600; }
+
+  .composer {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    border-top: 0.5px solid var(--separator);
+    background: var(--nav-blur);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+  }
+
+  .composer-input {
+    flex: 1;
+    min-height: 36px;
+    max-height: 140px;
+    padding: 8px 14px;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    background: transparent;
+    color: #fff;
+    outline: none;
+    font-size: 16px;
+    line-height: 1.3;
+    resize: none;
+    font-family: inherit;
+  }
+  .composer-input::placeholder { color: var(--text3); }
+
+  .send-btn {
+    flex: 0 0 34px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--blue-ios);
+    display: grid; place-items: center;
+    color: #fff;
+    transition: transform 0.15s, opacity 0.15s;
+    align-self: flex-end;
+    margin-bottom: 1px;
+  }
+  .send-btn:disabled { opacity: 0.4; transform: scale(0.9); }
+  .send-btn svg { width: 18px; height: 18px; }
+
+  /* ============ New chat popup ============ */
+  .sheet-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+  }
+  .sheet-backdrop.active { display: flex; }
+
+  .sheet {
+    width: min(100%, 340px);
+    padding: 22px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #2c2c2e, #1c1c1e);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+    animation: card-in 0.3s var(--ease);
+  }
+  .sheet h3 {
+    margin: 0 0 6px;
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .sheet p {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: var(--text2);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .sheet .input { text-align: center; font-family: ui-monospace, monospace; letter-spacing: 0.15em; font-size: 20px; font-weight: 700; color: var(--blue); }
+  .sheet .btn-primary { margin-top: 14px; }
+
+  .avatar-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+    color: var(--text2);
+    font-size: 14px;
+  }
+
+  @keyframes card-in {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -3px;
+    margin-right: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
     }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--bg);
-    }
-
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-        "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    button, input { font: inherit; }
-    button { -webkit-tap-highlight-color: transparent; }
-
-    .ambient {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 50% 35%, rgba(10, 132, 255, 0.075), transparent 28%),
-        radial-gradient(circle at 18% 85%, rgba(88, 86, 214, 0.045), transparent 25%);
-    }
-
-    .ambient::after {
-      content: "";
-      position: absolute;
-      inset: -20%;
-      background: radial-gradient(circle at center, transparent 35%, rgba(0, 0, 0, 0.65) 100%);
-    }
-
-    .modal {
-      position: relative;
-      width: min(100%, 430px);
-      max-height: calc(100dvh - 48px);
-      overflow: auto;
-      padding: 34px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: var(--radius-xl);
-      background:
-        linear-gradient(180deg, rgba(58, 58, 60, 0.42), rgba(28, 28, 30, 0.76)),
-        var(--surface);
-      box-shadow:
-        0 40px 100px rgba(0, 0, 0, 0.62),
-        inset 0 1px 0 rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(34px) saturate(150%);
-      -webkit-backdrop-filter: blur(34px) saturate(150%);
-      animation: modal-in 0.55s var(--ease) both;
-    }
-
-    .brand {
-      display: grid;
-      justify-items: center;
-      margin-bottom: 28px;
-    }
-
-    .brand-name {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: #f5f5f7;
-    }
-
-    .view { display: none; animation: view-in 0.38s var(--ease) both; }
-    .view.active { display: block; }
-
-    .heading {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .heading h1 {
-      margin: 0;
-      font-size: 25px;
-      line-height: 1.15;
-      font-weight: 600;
-      letter-spacing: -0.025em;
-    }
-
-    .heading p {
-      margin: 8px 0 0;
-      color: var(--secondary);
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .fields { display: grid; gap: 10px; }
-    .field { position: relative; }
-
-    .field input {
-      width: 100%;
-      height: 52px;
-      padding: 0 48px 0 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-lg);
-      outline: none;
-      color: #ffffff;
-      background: var(--field);
-      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .field input:hover { background: var(--field-hover); }
-
-    .field input:focus {
-      background: rgba(118, 118, 128, 0.23);
-      border-color: rgba(10, 132, 255, 0.9);
-      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.20);
-    }
-
-    .field input::placeholder { color: rgba(235, 235, 245, 0.38); }
-
-    .generated {
-      height: 58px !important;
-      padding: 0 16px !important;
-      text-align: center;
-      color: var(--blue) !important;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-    }
-
-    .label {
-      display: block;
-      margin: 0 0 8px 4px;
-      color: var(--secondary);
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .error {
-      display: none;
-      margin: 0 0 14px;
-      padding: 11px 14px;
-      border: 1px solid rgba(255, 69, 58, 0.20);
-      border-radius: 14px;
-      color: #ff6961;
-      background: rgba(255, 69, 58, 0.09);
-      font-size: 13px;
-      line-height: 1.4;
-      animation: shake 0.35s ease both;
-    }
-    .error.visible { display: block; }
-
-    .primary {
-      width: 100%;
-      height: 52px;
-      margin-top: 18px;
-      border: 0;
-      border-radius: 15px;
-      color: #ffffff;
-      background: var(--blue);
-      box-shadow:
-        0 8px 20px rgba(10, 132, 255, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.16);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.18s var(--ease), background 0.18s ease,
-        box-shadow 0.18s ease, opacity 0.18s ease;
-    }
-    .primary:hover { background: var(--blue-hover); }
-    .primary:active { transform: scale(0.975); box-shadow: none; }
-    .primary:disabled { opacity: 0.55; cursor: default; transform: none; }
-
-    .secondary-link {
-      display: block;
-      width: fit-content;
-      margin: 18px auto 0;
-      padding: 5px 8px;
-      border: 0;
-      color: #2997ff;
-      background: transparent;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .secondary-link:active { opacity: 0.55; }
-
-    .password-toggle {
-      position: absolute;
-      top: 50%;
-      right: 12px;
-      width: 34px;
-      height: 34px;
-      transform: translateY(-50%);
-      display: grid;
-      place-items: center;
-      border: 0;
-      border-radius: 50%;
-      color: rgba(235, 235, 245, 0.48);
-      background: transparent;
-      cursor: pointer;
-    }
-    .password-toggle:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
-    .password-toggle svg { width: 18px; height: 18px; }
-
-    .spinner {
-      display: inline-block;
-      width: 17px; height: 17px;
-      margin-right: 8px;
-      vertical-align: -3px;
-      border: 2px solid rgba(255, 255, 255, 0.38);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-
-    /* ===== ЭКРАН ЧАТОВ ===== */
-    .chats {
-      width: min(100%, 430px);
-      height: calc(100dvh - 48px);
-      display: none;
-      flex-direction: column;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: var(--radius-xl);
-      background:
-        linear-gradient(180deg, rgba(58, 58, 60, 0.42), rgba(28, 28, 30, 0.76)),
-        var(--surface);
-      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.62);
-      backdrop-filter: blur(34px) saturate(150%);
-      -webkit-backdrop-filter: blur(34px) saturate(150%);
-      overflow: hidden;
-    }
-    .chats.active { display: flex; }
-
-    .chats-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--separator);
-    }
-
-    .chats-header h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .chats-header .me {
-      display: block;
-      margin-top: 3px;
-      color: var(--secondary);
-      font-size: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .logout {
-      border: 0;
-      padding: 8px 12px;
-      border-radius: 12px;
-      color: #ff6961;
-      background: rgba(255, 69, 58, 0.10);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .logout:active { opacity: 0.6; }
-
-    .chats-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 12px 18px;
-    }
-
-    .chat-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border-radius: 16px;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-    .chat-item:hover { background: rgba(255, 255, 255, 0.05); }
-
-    .chat-avatar {
-      width: 46px; height: 46px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #0a84ff, #5856d6);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 17px;
-      flex: 0 0 46px;
-    }
-
-    .chat-meta { flex: 1; min-width: 0; }
-
-    .chat-name {
-      font-weight: 600;
-      font-size: 15px;
-      margin-bottom: 3px;
-      color: #fff;
-    }
-
-    .chat-last {
-      font-size: 13px;
-      color: var(--secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .chat-time {
-      font-size: 12px;
-      color: rgba(235, 235, 245, 0.40);
-      flex: 0 0 auto;
-    }
-
-    .chats-empty {
-      text-align: center;
-      color: var(--secondary);
-      font-size: 14px;
-      padding: 60px 20px;
-    }
-
-    .chats-fab {
-      margin: 0 12px 16px;
-      height: 52px;
-      border: 0;
-      border-radius: 15px;
-      color: #fff;
-      background: var(--blue);
-      font-weight: 600;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    .chats-fab:active { transform: scale(0.98); }
-
-    @keyframes modal-in {
-      from { opacity: 0; transform: scale(0.96) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    @keyframes view-in {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
-    }
-
-    @media (max-width: 520px) {
-      body { padding: 12px; }
-      .modal { padding: 28px 20px 22px; border-radius: 24px; max-height: calc(100dvh - 24px); }
-      .heading h1 { font-size: 23px; }
-      .chats { height: calc(100dvh - 24px); border-radius: 24px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 
-  <div class="ambient" aria-hidden="true"></div>
+<!-- ================= AUTH ================= -->
+<div class="screen active" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.5 2 2 6 2 11c0 2.8 1.4 5.3 3.7 6.9-.2 1-.8 2.5-1.7 3.6-.2.2 0 .5.2.5 2 .1 3.9-.6 5.2-1.5.8.2 1.7.3 2.6.3 5.5 0 10-4 10-9S17.5 2 12 2z"/>
+        </svg>
+      </div>
+    </div>
 
-  <!-- ЭКРАН АВТОРИЗАЦИИ -->
-  <main class="modal" id="auth-modal" role="dialog" aria-modal="true">
-    <div class="brand"><p class="brand-name">Message</p></div>
-
-    <div id="auth-error" class="error" role="alert" aria-live="polite"></div>
+    <div id="auth-alert" class="alert"></div>
 
     <!-- LOGIN -->
-    <section id="login-view" class="view active">
-      <div class="heading">
-        <h1>Вход в Аккаунт Message</h1>
-        <p>Введите ID и пароль, чтобы продолжить</p>
+    <section id="view-login">
+      <h1 class="auth-title">Сообщения</h1>
+      <p class="auth-sub">Войдите с вашим ID и паролем</p>
+
+      <div class="field-group">
+        <div>
+          <div class="field-label">ID</div>
+          <input id="login-id" class="input id-input" type="text" inputmode="numeric"
+            maxlength="6" placeholder="000000" autocomplete="username">
+        </div>
+        <div>
+          <div class="field-label">Пароль</div>
+          <div class="input-wrap">
+            <input id="login-password" class="input" type="password"
+              placeholder="Пароль" autocomplete="current-password"
+              onkeydown="handleEnter(event, doLogin)">
+            <button class="password-toggle" type="button"
+              onclick="togglePassword('login-password', this)"></button>
+          </div>
+        </div>
       </div>
 
-      <div class="fields">
-        <div class="field">
-          <input id="login-id" type="text" inputmode="numeric"
-            autocomplete="username" placeholder="ID (6 цифр)" maxlength="6">
-        </div>
-
-        <div class="field">
-          <input id="login-password" type="password"
-            autocomplete="current-password" placeholder="Пароль"
-            onkeydown="handleEnter(event, login)">
-          <button class="password-toggle" type="button"
-            onclick="togglePassword('login-password', this)"
-            aria-label="Показать пароль"></button>
-        </div>
-      </div>
-
-      <button class="secondary-link" type="button" onclick="switchToRegisterView()">
-        Создать Аккаунт Message
+      <button class="btn btn-primary" id="login-btn" type="button" onclick="doLogin()">
+        Войти
       </button>
 
-      <button id="login-button" class="primary" type="button" onclick="login()">
-        Продолжить
+      <button class="btn-link" type="button" onclick="showRegister()">
+        Создать новый аккаунт
       </button>
     </section>
 
     <!-- REGISTER -->
-    <section id="register-view" class="view">
-      <div class="heading">
-        <h1>Создание Аккаунта</h1>
-        <p>Ваш уникальный ID будет создан автоматически</p>
-      </div>
+    <section id="view-register" style="display:none">
+      <h1 class="auth-title">Новый аккаунт</h1>
+      <p class="auth-sub">Ваш ID сгенерирован автоматически</p>
 
-      <div class="fields">
+      <div class="field-group">
         <div>
-          <label class="label" for="reg-generated-id">Ваш ID Message</label>
-          <input id="reg-generated-id" class="field generated" type="text"
-            readonly aria-readonly="true">
+          <div class="field-label">Ваш ID</div>
+          <input id="reg-id" class="input id-input readonly" type="text" readonly>
         </div>
-
-        <div class="field">
-          <label class="label" for="reg-password">Пароль</label>
-          <input id="reg-password" type="password" autocomplete="new-password"
-            placeholder="Придумайте пароль"
-            onkeydown="handleEnter(event, confirmRegistration)">
-          <button class="password-toggle" type="button"
-            onclick="togglePassword('reg-password', this)"
-            aria-label="Показать пароль"></button>
+        <div>
+          <div class="field-label">Имя (необязательно)</div>
+          <input id="reg-name" class="input" type="text" placeholder="Ваше имя" maxlength="40">
+        </div>
+        <div>
+          <div class="field-label">Пароль</div>
+          <div class="input-wrap">
+            <input id="reg-password" class="input" type="password"
+              placeholder="Минимум 6 символов" autocomplete="new-password"
+              onkeydown="handleEnter(event, doRegister)">
+            <button class="password-toggle" type="button"
+              onclick="togglePassword('reg-password', this)"></button>
+          </div>
         </div>
       </div>
 
-      <button class="secondary-link" type="button" onclick="switchToLoginView()">
-        Уже есть аккаунт? Войти
-      </button>
-
-      <button id="register-button" class="primary" type="button"
-        onclick="confirmRegistration()">
+      <button class="btn btn-primary" id="register-btn" type="button" onclick="doRegister()">
         Создать и войти
       </button>
+
+      <button class="btn-link" type="button" onclick="showLogin()">
+        У меня уже есть аккаунт
+      </button>
     </section>
-  </main>
+  </div>
+</div>
 
-  <!-- ЭКРАН ЧАТОВ -->
-  <main class="chats" id="chats-screen" role="dialog" aria-modal="true">
-    <header class="chats-header">
-      <div>
-        <h2>Чаты</h2>
-        <span class="me" id="me-id">ID: —</span>
+<!-- ================= CHAT LIST ================= -->
+<div class="screen" id="list-screen">
+  <div class="nav">
+    <button class="nav-btn" type="button" onclick="openProfile()">Профиль</button>
+    <div class="nav-title">Чаты</div>
+    <button class="nav-btn right bold" type="button" onclick="openNewChat()">＋</button>
+  </div>
+
+  <div class="content">
+    <div class="search-wrap">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <input id="search-input" type="text" placeholder="Поиск" oninput="renderChats()">
       </div>
-      <button class="logout" type="button" onclick="logout()">Выйти</button>
-    </header>
-
-    <div class="chats-body" id="chats-list">
-      <!-- сюда будут рендериться чаты -->
     </div>
 
-    <button class="chats-fab" type="button" onclick="alert('Скоро: создание нового чата')">
-      Новый чат
+    <div class="chat-list" id="chat-list"></div>
+  </div>
+</div>
+
+<!-- ================= CONVERSATION ================= -->
+<div class="screen" id="chat-screen">
+  <div class="nav">
+    <button class="nav-btn" type="button" onclick="backToList()">
+      <span style="color:var(--blue-ios)">‹ Чаты</span>
     </button>
-  </main>
+    <div class="nav-title">
+      <span id="chat-with-name">—</span>
+      <small id="chat-with-id">ID: —</small>
+    </div>
+    <div style="min-width:60px"></div>
+  </div>
 
-  <script>
-    let currentGeneratedId = null;
-    const $ = (id) => document.getElementById(id);
+  <div class="messages" id="messages"></div>
 
-    const eyeIcon = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/>
-        <circle cx="12" cy="12" r="2.5"/>
-      </svg>`;
-    const eyeOffIcon = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="m3 3 18 18"/>
-        <path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7s-3.5 7-10 7c-1.5 0-2.8-.4-4-.9"/>
-        <path d="M6.6 6.6C3.7 8.3 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.4 4-.9"/>
-        <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
-      </svg>`;
+  <div class="composer">
+    <textarea id="msg-input" class="composer-input" rows="1"
+      placeholder="iMessage" oninput="autoGrow(this)"
+      onkeydown="handleComposerKey(event)"></textarea>
+    <button class="send-btn" id="send-btn" type="button" onclick="sendMessage()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>
+      </svg>
+    </button>
+  </div>
+</div>
 
-    document.querySelectorAll(".password-toggle").forEach(btn => {
-      btn.innerHTML = eyeIcon;
-    });
+<!-- ================= NEW CHAT SHEET ================= -->
+<div class="sheet-backdrop" id="new-chat-backdrop" onclick="if(event.target===this)closeNewChat()">
+  <div class="sheet">
+    <h3>Новый чат</h3>
+    <p>Введите ID пользователя (6 цифр)</p>
+    <input id="new-chat-id" class="input" type="text" inputmode="numeric"
+      maxlength="6" placeholder="000000"
+      onkeydown="handleEnter(event, startChatByID)">
+    <button class="btn btn-primary" type="button" onclick="startChatByID()">
+      Найти
+    </button>
+    <button class="btn-link" type="button" onclick="closeNewChat()">Отмена</button>
+  </div>
+</div>
 
-    /* ===== Ошибки / успех ===== */
-    function clearError() {
-      const el = $("auth-error");
-      el.textContent = "";
-      el.classList.remove("visible");
-      el.style.color = "";
-      el.style.background = "";
-      el.style.borderColor = "";
-    }
-    function showError(msg) {
-      const el = $("auth-error");
-      el.style.color = "";
-      el.style.background = "";
-      el.style.borderColor = "";
-      el.textContent = msg;
-      el.classList.remove("visible");
-      void el.offsetWidth;
-      el.classList.add("visible");
-    }
-    function showSuccess(msg) {
-      const el = $("auth-error");
-      el.textContent = msg;
-      el.style.color = "#30d158";
-      el.style.background = "rgba(48,209,88,.09)";
-      el.style.borderColor = "rgba(48,209,88,.20)";
-      el.classList.add("visible");
-    }
+<!-- ================= PROFILE SHEET ================= -->
+<div class="sheet-backdrop" id="profile-backdrop" onclick="if(event.target===this)closeProfile()">
+  <div class="sheet">
+    <h3>Профиль</h3>
+    <div class="avatar-preview">
+      <div class="avatar" id="profile-avatar">?</div>
+      <div>
+        <div style="color:#fff;font-weight:600" id="profile-name">—</div>
+        <div style="font-family:ui-monospace,monospace" id="profile-id">ID: —</div>
+      </div>
+    </div>
+    <input id="profile-name-input" class="input" type="text" placeholder="Ваше имя" maxlength="40" style="margin-bottom:10px">
+    <button class="btn btn-primary" type="button" onclick="saveName()">Сохранить имя</button>
+    <button class="btn-link" type="button" onclick="logout()" style="color:#ff6961">Выйти из аккаунта</button>
+    <button class="btn-link" type="button" onclick="closeProfile()">Закрыть</button>
+  </div>
+</div>
 
-    /* ===== Переключение экранов ===== */
-    function switchToRegisterView() {
-      clearError();
-      $("login-view").classList.remove("active");
-      $("register-view").classList.add("active");
-      generateId();
-      setTimeout(() => $("reg-password").focus(), 120);
-    }
-    function switchToLoginView() {
-      clearError();
-      $("register-view").classList.remove("active");
-      $("login-view").classList.add("active");
-      setTimeout(() => $("login-id").focus(), 120);
-    }
+<script>
+/* ============ STATE ============ */
+const state = {
+  me: null,        // { id, name, password }
+  chats: [],       // [{ with, name, last, time }]
+  current: null,   // { id, name }
+  pollTimer: null,
+  refreshTimer: null,
+};
 
-    /* ===== Генерация ID (6 цифр) ===== */
-    async function generateId() {
-      const input = $("reg-generated-id");
-      input.value = "……";
-      try {
-        const r = await fetch("/api/generate-id");
-        const data = await r.json();
-        if (!r.ok || data.error || !data.id) throw new Error("fail");
-        currentGeneratedId = data.id;
-        input.value = currentGeneratedId;
-      } catch {
-        currentGeneratedId = null;
-        input.value = "";
-        showError("Не удалось создать ID. Попробуйте ещё раз.");
-      }
-    }
+const $ = (id) => document.getElementById(id);
 
-    /* ===== Loading ===== */
-    function setLoading(btn, loading, label) {
-      btn.disabled = loading;
-      btn.innerHTML = loading
-        ? `<span class="spinner"></span>${label}`
-        : label;
-    }
-
-    /* ===== Регистрация ===== */
-    async function confirmRegistration() {
-      clearError();
-      const password = $("reg-password").value.trim();
-
-      if (!password) {
-        showError("Введите пароль.");
-        $("reg-password").focus();
-        return;
-      }
-      if (password.length < 6) {
-        showError("Пароль должен содержать минимум 6 символов.");
-        $("reg-password").focus();
-        return;
-      }
-      if (!currentGeneratedId) {
-        showError("ID ещё не создан. Попробуйте ещё раз.");
-        return;
-      }
-
-      const btn = $("register-button");
-      setLoading(btn, true, "Создание…");
-      try {
-        const r = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: currentGeneratedId, password }),
-        });
-        const data = await r.json();
-        if (!r.ok || data.error) throw new Error(data.error || "Ошибка");
-        enterChats(data.id);
-      } catch (e) {
-        showError(e.message || "Не удалось создать аккаунт.");
-      } finally {
-        setLoading(btn, false, "Создать и войти");
-      }
-    }
-
-    /* ===== Логин ===== */
-    async function login() {
-      clearError();
-      const id = $("login-id").value.trim();
-      const password = $("login-password").value.trim();
-
-      if (!id || !password) {
-        showError("Введите ID и пароль.");
-        return;
-      }
-      if (!/^\d{6}$/.test(id)) {
-        showError("ID должен состоять из 6 цифр.");
-        return;
-      }
-
-      const btn = $("login-button");
-      setLoading(btn, true, "Проверка…");
-      try {
-        const r = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, password }),
-        });
-        const data = await r.json();
-        if (!r.ok || data.error) throw new Error(data.error || "Ошибка");
-        enterChats(data.id);
-      } catch (e) {
-        showError(e.message || "Не удалось выполнить вход.");
-      } finally {
-        setLoading(btn, false, "Продолжить");
-      }
-    }
-
-    /* ===== Переход в чаты ===== */
-    function enterChats(userId) {
-      clearError();
-      $("login-password").value = "";
-      $("reg-password").value = "";
-
-      $("auth-modal").style.display = "none";
-      $("chats-screen").classList.add("active");
-      $("me-id").textContent = "ID: " + userId;
-
-      renderChats(userId);
-
-      // запоминаем, чтобы после перезагрузки сразу открывались чаты
-      try { localStorage.setItem("message_user_id", userId); } catch {}
-    }
-
-    function renderChats(userId) {
-      const list = $("chats-list");
-      // Заглушка. Позже сюда можно подгружать реальные чаты с сервера.
-      const demoChats = [
-        { name: "Избранное", last: "Нет сообщений", time: "" },
-        { name: "Сохранённые", last: "Нет сообщений", time: "" },
-      ];
-
-      if (!demoChats.length) {
-        list.innerHTML = `<div class="chats-empty">Пока нет чатов</div>`;
-        return;
-      }
-
-      list.innerHTML = demoChats.map(c => `
-        <div class="chat-item" onclick="alert('Открыть чат: ${c.name}')">
-          <div class="chat-avatar">${c.name.charAt(0).toUpperCase()}</div>
-          <div class="chat-meta">
-            <div class="chat-name">${c.name}</div>
-            <div class="chat-last">${c.last}</div>
-          </div>
-          <div class="chat-time">${c.time}</div>
-        </div>
-      `).join("");
-    }
-
-    function logout() {
-      try { localStorage.removeItem("message_user_id"); } catch {}
-      $("chats-screen").classList.remove("active");
-      $("auth-modal").style.display = "";
-      switchToLoginView();
-    }
-
-    /* ===== Прочее ===== */
-    function togglePassword(id, btn) {
-      const input = $(id);
-      const visible = input.type === "text";
-      input.type = visible ? "password" : "text";
-      btn.innerHTML = visible ? eyeIcon : eyeOffIcon;
-      btn.setAttribute("aria-label", visible ? "Показать пароль" : "Скрыть пароль");
-    }
-
-    function handleEnter(e, action) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        action();
-      }
-    }
-
-    // Автовход, если уже заходил (по желанию)
-    window.addEventListener("DOMContentLoaded", () => {
-      let saved = null;
-      try { saved = localStorage.getItem("message_user_id"); } catch {}
-      if (saved && /^\d{6}$/.test(saved)) {
-        enterChats(saved);
-      }
-    });
-  </script>
-</body>
-</html>
+/* ============ ICONS ============ */
+const EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>`;
+const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7s-3.5 7
