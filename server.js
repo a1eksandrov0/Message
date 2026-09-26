@@ -1,4 +1,20 @@
-// Генерация свободного ID для формы регистрации
+const express = require('express');
+const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+
+const app = express();
+
+// Инициализация Supabase (ключи берутся из переменных окружения на Render)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+app.use(express.json());
+
+// Раздаем статические файлы из папки public (где лежит твой index.html)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 1. Генерация свободного ID для формы регистрации
 app.get('/api/generate-id', async (req, res) => {
   try {
     let newId;
@@ -22,7 +38,7 @@ app.get('/api/generate-id', async (req, res) => {
   }
 });
 
-// Регистрация с четко переданным ID
+// 2. Регистрация с четко переданным ID
 app.post('/api/register', async (req, res) => {
   try {
     const { id, password } = req.body;
@@ -60,4 +76,39 @@ app.post('/api/register', async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: 'Ошибка сервера' });
   }
+});
+
+// 3. Логин (проверка пользователя)
+app.post('/api/login', async (req, res) => {
+  try {
+    const { id, password } = req.body;
+
+    if (!id || !password) {
+      return res.status(400).json({ error: 'Введите ID и пароль' });
+    }
+
+    const cleanId = String(id).trim();
+    const cleanPassword = String(password).trim();
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', cleanId)
+      .eq('password', cleanPassword)
+      .maybeSingle();
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Неверный ID или пароль' });
+    }
+
+    return res.json({ id: user.id });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
