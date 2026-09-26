@@ -4,15 +4,12 @@ const path = require("path");
 const crypto = require("crypto");
 
 const app = express();
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "2mb" }));
 
 const ROOT = __dirname;
 const DB_FILE = path.join(ROOT, "db.json");
-const UPLOADS_DIR = path.join(ROOT, "uploads");
 const PUBLIC_DIR = path.join(ROOT, "public");
 const INDEX_FILE = path.join(PUBLIC_DIR, "index.html");
-
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) return { users: {}, chats: {} };
@@ -29,7 +26,7 @@ function saveDB(db) { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)); }
 function hash(p) { return crypto.createHash("sha256").update(p).digest("hex"); }
 function chatKey(a, b) { return [a, b].sort().join("_"); }
 
-/* ================= API ================= */
+/* ============ API ============ */
 
 app.get("/api/generate-id", (req, res) => {
   const db = loadDB();
@@ -54,11 +51,8 @@ app.post("/api/register", (req, res) => {
     createdAt: Date.now(),
     name: "Пользователь " + id
   };
-
-  // Создаём чат "Избранное" (заметки себе) для нового пользователя
   const favKey = id + "_" + id;
   if (!db.chats[favKey]) db.chats[favKey] = [];
-
   saveDB(db);
   res.json({ id, name: db.users[id].name });
 });
@@ -88,17 +82,11 @@ app.post("/api/user/name", (req, res) => {
   res.json({ id, name: u.name });
 });
 
-/* ---- СПИСОК ЧАТОВ ---- */
 app.get("/api/chats/:id", (req, res) => {
   const db = loadDB();
   const me = req.params.id;
-
-  // у каждого пользователя должен быть чат "Избранное"
   const favKey = me + "_" + me;
-  if (!db.chats[favKey]) {
-    db.chats[favKey] = [];
-    saveDB(db);
-  }
+  if (!db.chats[favKey]) { db.chats[favKey] = []; saveDB(db); }
 
   const result = [];
   for (const key of Object.keys(db.chats)) {
@@ -106,22 +94,16 @@ app.get("/api/chats/:id", (req, res) => {
     const [a, b] = key.split("_");
     const other = a === me ? b : a;
 
-    // "Избранное" — только для себя
     if (other === me) {
       const msgs = db.chats[key];
       const last = msgs[msgs.length - 1];
       result.push({
-        with: me,
-        name: "Избранное",
-        isFavorites: true,
-        last: last ? last.text : "",
-        lastFromMe: last ? last.from === me : false,
-        time: last ? last.time : 0,
-        unread: 0
+        with: me, name: "Избранное", isFavorites: true,
+        last: last ? last.text : "", lastFromMe: last ? last.from === me : false,
+        time: last ? last.time : 0, unread: 0
       });
       continue;
     }
-
     const msgs = db.chats[key];
     const last = msgs[msgs.length - 1];
     const unread = msgs.filter(m => m.to === me && !m.read).length;
@@ -129,10 +111,8 @@ app.get("/api/chats/:id", (req, res) => {
       with: other,
       name: (db.users[other] && db.users[other].name) || ("Пользователь " + other),
       isFavorites: false,
-      last: last ? last.text : "",
-      lastFromMe: last ? last.from === me : false,
-      time: last ? last.time : 0,
-      unread
+      last: last ? last.text : "", lastFromMe: last ? last.from === me : false,
+      time: last ? last.time : 0, unread
     });
   }
   result.sort((x, y) => {
@@ -143,41 +123,33 @@ app.get("/api/chats/:id", (req, res) => {
   res.json(result);
 });
 
-/* ---- СООБЩЕНИЯ ---- */
 app.get("/api/messages/:me/:other", (req, res) => {
   const db = loadDB();
   const key = chatKey(req.params.me, req.params.other);
   const msgs = db.chats[key] || [];
-
   let changed = false;
   msgs.forEach(m => {
     if (m.to === req.params.me && !m.read) { m.read = true; changed = true; }
   });
   if (changed) saveDB(db);
-
   res.json(msgs);
 });
 
 app.post("/api/messages", (req, res) => {
-  const { from, to, text, replyTo, attachment } = req.body || {};
-  if (!from || !to) return res.status(400).json({ error: "Нужны from и to" });
-  if (!text && !attachment) return res.status(400).json({ error: "Пустое сообщение" });
+  const { from, to, text, replyTo } = req.body || {};
+  if (!from || !to || !text) return res.status(400).json({ error: "Нужны from, to, text" });
   const db = loadDB();
   if (!db.users[from] || !db.users[to]) return res.status(404).json({ error: "Пользователь не найден" });
-
   const key = chatKey(from, to);
   if (!db.chats[key]) db.chats[key] = [];
-
   const msg = {
     id: crypto.randomBytes(8).toString("hex"),
-    from,
-    to,
-    text: String(text || "").slice(0, 4000),
+    from, to,
+    text: String(text).slice(0, 4000),
     time: Date.now(),
     read: false,
     edited: false,
-    replyTo: replyTo || null,
-    attachment: attachment || null
+    replyTo: replyTo || null
   };
   db.chats[key].push(msg);
   saveDB(db);
@@ -211,28 +183,18 @@ app.post("/api/messages/delete", (req, res) => {
   res.json({ ok: true });
 });
 
-/* ---- ЗАГРУЗКА ФАЙЛОВ ---- */
-app.post("/api/upload", express.raw({ type: "*/*", limit: "10mb" }), (req, res) => {
-  const name = (req.headers["x-file-name"] || "file").toString();
-  const safe = crypto.randomBytes(8).toString("hex") + "-" + name.replace(/[^\w.\-]/g, "_");
-  const target = path.join(UPLOADS_DIR, safe);
-  fs.writeFileSync(target, req.body);
-  res.json({
-    url: "/uploads/" + safe,
-    name,
-    size: req.body.length
-  });
-});
+/* ============ ФРОНТЕНД ============ */
 
-app.use("/uploads", express.static(UPLOADS_DIR));
-
-/* ---- ФРОНТЕНД ---- */
 app.use(express.static(PUBLIC_DIR));
-app.get(["/", "/index.html"], (req, res) => {
+
+// все страницы, кроме /api/*, отдают index.html — роутинг делает фронтенд
+app.get(["/", "/login", "/id:userId", "/index.html"], (req, res) => {
   if (!fs.existsSync(INDEX_FILE)) return res.status(500).send("index.html не найден");
   res.sendFile(INDEX_FILE);
 });
+
 app.use((req, res) => {
+  if (req.path.startsWith("/api/")) return res.status(404).json({ error: "Not found" });
   if (fs.existsSync(INDEX_FILE)) return res.sendFile(INDEX_FILE);
   res.status(404).send("Not found");
 });
