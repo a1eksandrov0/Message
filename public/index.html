@@ -132,7 +132,7 @@
     let myId = null;
     let currentChatId = null;
     
-    // Хранение истории активных чатов { chatId: { unreadCount: Number, lastText: String } }
+    // Хранение состояния диалогов { chatId: { unreadCount: Number, lastText: String } }
     const activeChats = {};
 
     function showAuthModal() {
@@ -174,7 +174,7 @@
         if (data.error) return showError(data.error);
 
         myId = data.id;
-        openChatScreen();
+        await openChatScreen();
       } catch (e) {
         showError('Ошибка соединения с сервером');
       }
@@ -199,18 +199,44 @@
         if (data.error) return showError(data.error);
 
         myId = data.id;
-        openChatScreen();
+        await openChatScreen();
       } catch (e) {
         showError('Ошибка соединения с сервером');
       }
     }
 
-    function openChatScreen() {
+    async function openChatScreen() {
       document.getElementById('landing-screen').classList.add('hidden');
       document.getElementById('auth-modal').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
       document.getElementById('my-id-display').innerText = myId;
+      
       socket.emit('register_socket', myId);
+
+      // Загружаем сохранённый список всех собеседников из базы данных
+      await loadChatList();
+    }
+
+    // Загрузка всех ранее начатых диалогов из базы данных
+    async function loadChatList() {
+      try {
+        const res = await fetch(`/api/messages/${myId}/all`);
+        const messages = await res.json();
+
+        if (Array.isArray(messages)) {
+          messages.forEach(msg => {
+            const partnerId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
+            if (!activeChats[partnerId]) {
+              activeChats[partnerId] = { unreadCount: 0, lastText: msg.text };
+            } else {
+              activeChats[partnerId].lastText = msg.text;
+            }
+          });
+          renderRecentChatsList();
+        }
+      } catch (e) {
+        console.error('Ошибка при загрузке списка диалогов:', e);
+      }
     }
 
     function handleManualStartChat() {
@@ -225,7 +251,6 @@
       currentChatId = targetId;
       document.getElementById('active-chat-id').innerText = currentChatId;
 
-      // Сбрасываем непрочитанные для открываемого чата
       if (!activeChats[targetId]) {
         activeChats[targetId] = { unreadCount: 0, lastText: '' };
       } else {
@@ -294,7 +319,7 @@
       input.value = '';
     }
 
-    // Подтверждение успешной отправки
+    // Подтверждение отправки сообщения
     socket.on('message_sent', (msg) => {
       const targetId = msg.receiver_id;
       if (!activeChats[targetId]) {
@@ -320,11 +345,9 @@
 
       activeChats[senderId].lastText = msg.text;
 
-      // Если чат с отправителем открыт прямо сейчас
       if (currentChatId === senderId) {
         addMessageToUI(msg);
       } else {
-        // Увеличиваем счётчик непрочитанных
         activeChats[senderId].unreadCount += 1;
       }
 
