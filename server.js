@@ -20,6 +20,7 @@ function generateID() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// Регистрация ТОЛЬКО с автоматической генерацией ID
 app.post('/api/register', async (req, res) => {
   const { password } = req.body;
   if (!password || password.length < 4) {
@@ -29,6 +30,7 @@ app.post('/api/register', async (req, res) => {
   let uniqueID = generateID();
   let isUnique = false;
 
+  // Поиск не задействованного ID в базе
   while (!isUnique) {
     const { data } = await supabase.from('users').select('id').eq('id', uniqueID);
     if (!data || data.length === 0) {
@@ -41,10 +43,11 @@ app.post('/api/register', async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   const { error } = await supabase.from('users').insert([{ id: uniqueID, password: hashedPassword }]);
 
-  if (error) return res.status(500).json({ error: 'Ошибка БД' });
+  if (error) return res.status(500).json({ error: 'Ошибка базы данных' });
   res.json({ id: uniqueID });
 });
 
+// Авторизация по ID и паролю
 app.post('/api/login', async (req, res) => {
   const { id, password } = req.body;
   const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
@@ -61,6 +64,24 @@ app.post('/api/login', async (req, res) => {
   res.json({ success: true, id: data.id });
 });
 
+// Получение ВСЕХ диалогов для постоянного сохранения истории
+app.get('/api/messages/:userId/all', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .order('created_at', { ascending: true });
+
+    if (error) return res.status(500).json({ error: 'Ошибка загрузки историй' });
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: 'Серверная ошибка' });
+  }
+});
+
+// Получение сообщений конкретного диалога
 app.get('/api/messages/:user1/:user2', async (req, res) => {
   const { user1, user2 } = req.params;
   const { data, error } = await supabase
@@ -73,6 +94,7 @@ app.get('/api/messages/:user1/:user2', async (req, res) => {
   res.json(data);
 });
 
+// WebSockets
 const userSockets = {};
 
 io.on('connection', (socket) => {
