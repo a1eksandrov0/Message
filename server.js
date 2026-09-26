@@ -8,10 +8,9 @@ app.use(express.json({ limit: "2mb" }));
 
 const ROOT = __dirname;
 const DB_FILE = path.join(ROOT, "db.json");
-const PUBLIC_DIR = path.join(ROOT, "public");
-const INDEX_FILE = path.join(PUBLIC_DIR, "index.html");
+const INDEX_FILE = path.join(ROOT, "index.html");
 
-/* -------- DB -------- */
+/* ================= DB ================= */
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) return { users: {}, chats: {} };
   try {
@@ -27,7 +26,7 @@ function saveDB(db) { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)); }
 function hash(p) { return crypto.createHash("sha256").update(p).digest("hex"); }
 function chatKey(a, b) { return [a, b].sort().join("_"); }
 
-/* -------- API -------- */
+/* ================= API ================= */
 
 app.get("/api/generate-id", (req, res) => {
   const db = loadDB();
@@ -102,7 +101,8 @@ app.get("/api/chats/:id", (req, res) => {
       const last = msgs[msgs.length - 1];
       result.push({
         with: me, name: "Избранное", isFavorites: true,
-        last: last ? last.text : "", lastFromMe: last ? last.from === me : false,
+        last: last ? last.text : "",
+        lastFromMe: last ? last.from === me : false,
         time: last ? last.time : 0, unread: 0
       });
       continue;
@@ -114,7 +114,8 @@ app.get("/api/chats/:id", (req, res) => {
       with: other,
       name: (db.users[other] && db.users[other].name) || ("Пользователь " + other),
       isFavorites: false,
-      last: last ? last.text : "", lastFromMe: last ? last.from === me : false,
+      last: last ? last.text : "",
+      lastFromMe: last ? last.from === me : false,
       time: last ? last.time : 0, unread
     });
   }
@@ -166,7 +167,7 @@ app.post("/api/messages/edit", (req, res) => {
   const msgs = db.chats[key] || [];
   const m = msgs.find(x => x.id === id);
   if (!m) return res.status(404).json({ error: "Сообщение не найдено" });
-  if (m.from !== me) return res.status(403).json({ error: "Нельзя редактировать чужое сообщение" });
+  if (m.from !== me) return res.status(403).json({ error: "Нельзя редактировать чужое" });
   m.text = String(text).slice(0, 4000);
   m.edited = true;
   saveDB(db);
@@ -180,26 +181,27 @@ app.post("/api/messages/delete", (req, res) => {
   const msgs = db.chats[key] || [];
   const idx = msgs.findIndex(x => x.id === id);
   if (idx === -1) return res.status(404).json({ error: "Сообщение не найдено" });
-  if (msgs[idx].from !== me) return res.status(403).json({ error: "Нельзя удалять чужое сообщение" });
+  if (msgs[idx].from !== me) return res.status(403).json({ error: "Нельзя удалять чужое" });
   msgs.splice(idx, 1);
   saveDB(db);
   res.json({ ok: true });
 });
 
-/* -------- ФРОНТЕНД -------- */
-
-app.use(express.static(PUBLIC_DIR));
-
-app.get(["/", "/login", "/register", "/id:userId", "/index.html"], (req, res) => {
-  if (!fs.existsSync(INDEX_FILE)) return res.status(500).send("index.html не найден");
+/* ================= ФРОНТЕНД ================= */
+/* Любой GET (кроме /api/*) → отдаём index.html из корня */
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  if (!fs.existsSync(INDEX_FILE)) {
+    return res.status(500).send("index.html не найден в корне проекта. Проверь, что файл лежит рядом с server.js.");
+  }
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.sendFile(INDEX_FILE);
 });
 
-app.use((req, res) => {
-  if (req.path.startsWith("/api/")) return res.status(404).json({ error: "Not found" });
-  if (fs.existsSync(INDEX_FILE)) return res.sendFile(INDEX_FILE);
-  res.status(404).send("Not found");
-});
-
+/* ================= START ================= */
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log("Server running on port " + port));
