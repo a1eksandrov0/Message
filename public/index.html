@@ -1,69 +1,196 @@
-function showAuthModal() {
-  document.getElementById('auth-modal').classList.remove('hidden');
-  clearError();
-}
+<!-- Модальное окно Входа / Регистрации -->
+<div id="auth-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
+  <div class="apple-card rounded-[28px] p-8 w-full max-w-[440px] shadow-2xl relative flex flex-col items-center text-left bg-[#1c1c1e] border border-white/10">
+    
+    <button onclick="hideAuthModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white transition text-lg w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">✕</button>
 
-function hideAuthModal() {
-  document.getElementById('auth-modal').classList.add('hidden');
-}
+    <!-- Точки в стиле Apple -->
+    <div class="flex gap-1.5 mb-6">
+      <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+    </div>
 
-function validateEnglishPassword(password) {
-  return /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(password);
-}
+    <!-- Сообщение об ошибке -->
+    <div id="auth-error" class="text-red-400 text-xs mb-4 hidden w-full text-center px-3 py-2 bg-red-500/10 rounded-xl border border-red-500/20"></div>
 
-// Создание аккаунта при нажатии на ссылку "Создание Аккаунта Message"
-async function register() {
-  clearError();
-  const password = document.getElementById('auth-password').value.trim();
+    <!-- Вью 1: ВХОД -->
+    <div id="login-view" class="w-full space-y-4">
+      <h2 class="text-2xl font-bold text-white text-center mb-6 tracking-tight">Вход с Аккаунтом Message</h2>
 
-  if (!password) {
-    return showError('Задайте пароль перед созданием аккаунта');
+      <div class="space-y-3">
+        <input id="login-id" type="text" placeholder="Введите ваш ID" class="w-full px-4 py-3.5 rounded-xl bg-[#2c2c2e] border border-white/15 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] font-mono text-sm transition">
+        <input id="login-password" type="password" placeholder="Пароль" class="w-full px-4 py-3.5 rounded-xl bg-[#2c2c2e] border border-white/15 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] text-sm transition">
+      </div>
+
+      <div class="pt-1">
+        <button type="button" onclick="switchToRegisterView()" class="text-[#007aff] hover:underline text-sm font-normal transition bg-transparent p-0 border-0 cursor-pointer">
+          Создание Аккаунта Message
+        </button>
+      </div>
+
+      <div class="pt-2 flex items-start gap-3">
+        <div class="text-[#007aff] flex-shrink-0 mt-0.5">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86l4.65 4.65c.39.39 1.02.39 1.41 0l.71-.71c.39-.39.39-1.02 0-1.41L7.17 10.5c.32-2.03 1.83-3.66 3.83-4.25v2.25c0 .55.45 1 1 1s1-.45 1-1V6.25c2 .59 3.51 2.22 3.83 4.25l-3.65 3.65c-.39.39-.39 1.02 0 1.41l.71.71c.39.39 1.02.39 1.41 0l4.65-4.65c.03.28.05.57.05.86 0 4.41-3.59 8-8 8z"/>
+          </svg>
+        </div>
+        <p class="text-[11px] leading-relaxed text-gray-400 font-normal">
+          Сведения об аккаунте Message используются для обеспечения безопасного входа и сквозного шифрования данных. 
+          <a href="#" class="text-[#007aff] hover:underline">Управление данными...</a>
+        </p>
+      </div>
+
+      <div class="pt-4">
+        <button onclick="login()" class="w-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.98] text-white font-medium py-3.5 rounded-xl transition duration-150 text-sm shadow-lg">
+          Продолжить
+        </button>
+      </div>
+    </div>
+
+    <!-- Вью 2: СОЗДАНИЕ АККАУНТА (РЕГИСТРАЦИЯ) -->
+    <div id="register-view" class="w-full space-y-4 hidden">
+      <h2 class="text-2xl font-bold text-white text-center mb-6 tracking-tight">Создание Аккаунта Message</h2>
+
+      <div>
+        <label class="block text-xs text-gray-400 mb-1 pl-1">Ваш ID (сгенерирован автоматически):</label>
+        <input id="reg-generated-id" type="text" readonly class="w-full px-4 py-3.5 rounded-xl bg-[#2a2a2c] border border-white/10 text-[#007aff] font-mono text-center text-lg font-bold select-all cursor-not-allowed">
+      </div>
+
+      <div>
+        <label class="block text-xs text-gray-400 mb-1 pl-1">Придумайте пароль:</label>
+        <input id="reg-password" type="password" placeholder="Введите пароль" class="w-full px-4 py-3.5 rounded-xl bg-[#2c2c2e] border border-white/15 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] text-sm transition">
+      </div>
+
+      <div class="pt-1">
+        <button type="button" onclick="switchToLoginView()" class="text-[#007aff] hover:underline text-sm font-normal transition bg-transparent p-0 border-0 cursor-pointer">
+          Уже есть аккаунт? Войти
+        </button>
+      </div>
+
+      <div class="pt-4">
+        <button onclick="confirmRegistration()" class="w-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.98] text-white font-medium py-3.5 rounded-xl transition duration-150 text-sm shadow-lg">
+          Зарегистрироваться и войти
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentGeneratedId = null;
+
+  function showAuthModal() {
+    document.getElementById('auth-modal').classList.remove('hidden');
+    switchToLoginView();
   }
-  if (!validateEnglishPassword(password)) {
-    return showError('Пароль должен содержать только английские буквы и символы');
+
+  function hideAuthModal() {
+    document.getElementById('auth-modal').classList.add('hidden');
   }
 
-  try {
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password })
-    });
-    const data = await res.json();
-
-    if (data.error) return showError(data.error);
-
-    myId = data.id;
-    alert(`Ваш новый ID Message: ${myId}`);
-    await openChatScreen();
-  } catch (e) {
-    showError('Ошибка соединения с сервером');
-  }
-}
-
-// Вход по кнопке "Продолжить"
-async function login() {
-  clearError();
-  const id = document.getElementById('auth-id').value.trim();
-  const password = document.getElementById('auth-password').value.trim();
-
-  if (!id || !password) {
-    return showError('Введите ваш ID и пароль');
+  function clearError() {
+    const errDiv = document.getElementById('auth-error');
+    errDiv.innerText = '';
+    errDiv.classList.add('hidden');
   }
 
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, password })
-    });
-    const data = await res.json();
-
-    if (data.error) return showError(data.error);
-
-    myId = data.id;
-    await openChatScreen();
-  } catch (e) {
-    showError('Ошибка соединения с сервером');
+  function showError(msg) {
+    const errDiv = document.getElementById('auth-error');
+    errDiv.innerText = msg;
+    errDiv.classList.remove('hidden');
   }
-}
+
+  // Нажатие на "Создание Аккаунта Message" — запрашивает ID и переключает вид
+  async function switchToRegisterView() {
+    clearError();
+    try {
+      const res = await fetch('/api/generate-id');
+      const data = await res.json();
+
+      if (data.error || !data.id) {
+        return showError('Не удалось сгенерировать ID');
+      }
+
+      currentGeneratedId = data.id;
+      document.getElementById('reg-generated-id').value = currentGeneratedId;
+      document.getElementById('reg-password').value = '';
+
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('register-view').classList.remove('hidden');
+    } catch (e) {
+      showError('Ошибка связи с сервером');
+    }
+  }
+
+  // Переключение обратно к форме входа
+  function switchToLoginView() {
+    clearError();
+    document.getElementById('register-view').classList.add('hidden');
+    document.getElementById('login-view').classList.remove('hidden');
+  }
+
+  // Регистрация с отображаемым ID
+  async function confirmRegistration() {
+    clearError();
+    const password = document.getElementById('reg-password').value.trim();
+
+    if (!password) {
+      return showError('Придумайте и введите пароль');
+    }
+    if (!currentGeneratedId) {
+      return showError('ID не сгенерирован');
+    }
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: currentGeneratedId, password })
+      });
+      
+      const data = await res.json();
+
+      if (data.error) {
+        return showError(data.error);
+      }
+
+      myId = data.id;
+      hideAuthModal();
+      await openChatScreen();
+    } catch (e) {
+      showError('Ошибка соединения с сервером');
+    }
+  }
+
+  // Вход
+  async function login() {
+    clearError();
+    const id = document.getElementById('login-id').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+
+    if (!id || !password) {
+      return showError('Введите ваш ID и пароль');
+    }
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, password })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        return showError(data.error);
+      }
+
+      myId = data.id;
+      hideAuthModal();
+      await openChatScreen();
+    } catch (e) {
+      showError('Ошибка соединения с сервером');
+    }
+  }
+</script>
