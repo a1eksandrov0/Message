@@ -10,7 +10,11 @@ const ROOT = __dirname;
 const DB_FILE = path.join(ROOT, "db.json");
 const INDEX_FILE = path.join(ROOT, "index.html");
 
-/* ================= DB ================= */
+console.log("=== START ===");
+console.log("ROOT:", ROOT);
+console.log("INDEX_FILE:", INDEX_FILE);
+console.log("INDEX exists:", fs.existsSync(INDEX_FILE));
+
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) return { users: {}, chats: {} };
   try {
@@ -25,8 +29,6 @@ function loadDB() {
 function saveDB(db) { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)); }
 function hash(p) { return crypto.createHash("sha256").update(p).digest("hex"); }
 function chatKey(a, b) { return [a, b].sort().join("_"); }
-
-/* ================= API ================= */
 
 app.get("/api/generate-id", (req, res) => {
   const db = loadDB();
@@ -43,14 +45,9 @@ app.post("/api/register", (req, res) => {
   if (!id || !password) return res.status(400).json({ error: "ID и пароль обязательны" });
   if (!/^\d{6}$/.test(id)) return res.status(400).json({ error: "ID — 6 цифр" });
   if (password.length < 6) return res.status(400).json({ error: "Пароль минимум 6 символов" });
-
   const db = loadDB();
   if (db.users[id]) return res.status(409).json({ error: "Такой ID уже существует" });
-  db.users[id] = {
-    password: hash(password),
-    createdAt: Date.now(),
-    name: "Пользователь " + id
-  };
+  db.users[id] = { password: hash(password), createdAt: Date.now(), name: "Пользователь " + id };
   const favKey = id + "_" + id;
   if (!db.chats[favKey]) db.chats[favKey] = [];
   saveDB(db);
@@ -61,9 +58,7 @@ app.post("/api/login", (req, res) => {
   const { id, password } = req.body || {};
   const db = loadDB();
   const user = db.users[id];
-  if (!user || user.password !== hash(password)) {
-    return res.status(401).json({ error: "Неверный ID или пароль" });
-  }
+  if (!user || user.password !== hash(password)) return res.status(401).json({ error: "Неверный ID или пароль" });
   res.json({ id, name: user.name || ("Пользователь " + id) });
 });
 
@@ -89,35 +84,27 @@ app.get("/api/chats/:id", (req, res) => {
   const me = req.params.id;
   const favKey = me + "_" + me;
   if (!db.chats[favKey]) { db.chats[favKey] = []; saveDB(db); }
-
   const result = [];
   for (const key of Object.keys(db.chats)) {
     if (!key.includes(me)) continue;
     const [a, b] = key.split("_");
     const other = a === me ? b : a;
-
     if (other === me) {
       const msgs = db.chats[key];
       const last = msgs[msgs.length - 1];
-      result.push({
-        with: me, name: "Избранное", isFavorites: true,
-        last: last ? last.text : "",
-        lastFromMe: last ? last.from === me : false,
-        time: last ? last.time : 0, unread: 0
-      });
+      result.push({ with: me, name: "Избранное", isFavorites: true,
+        last: last ? last.text : "", lastFromMe: last ? last.from === me : false,
+        time: last ? last.time : 0, unread: 0 });
       continue;
     }
     const msgs = db.chats[key];
     const last = msgs[msgs.length - 1];
     const unread = msgs.filter(m => m.to === me && !m.read).length;
-    result.push({
-      with: other,
+    result.push({ with: other,
       name: (db.users[other] && db.users[other].name) || ("Пользователь " + other),
-      isFavorites: false,
-      last: last ? last.text : "",
+      isFavorites: false, last: last ? last.text : "",
       lastFromMe: last ? last.from === me : false,
-      time: last ? last.time : 0, unread
-    });
+      time: last ? last.time : 0, unread });
   }
   result.sort((x, y) => {
     if (x.isFavorites) return -1;
@@ -146,15 +133,9 @@ app.post("/api/messages", (req, res) => {
   if (!db.users[from] || !db.users[to]) return res.status(404).json({ error: "Пользователь не найден" });
   const key = chatKey(from, to);
   if (!db.chats[key]) db.chats[key] = [];
-  const msg = {
-    id: crypto.randomBytes(8).toString("hex"),
-    from, to,
-    text: String(text).slice(0, 4000),
-    time: Date.now(),
-    read: false,
-    edited: false,
-    replyTo: replyTo || null
-  };
+  const msg = { id: crypto.randomBytes(8).toString("hex"), from, to,
+    text: String(text).slice(0, 4000), time: Date.now(), read: false, edited: false,
+    replyTo: replyTo || null };
   db.chats[key].push(msg);
   saveDB(db);
   res.json(msg);
@@ -187,14 +168,22 @@ app.post("/api/messages/delete", (req, res) => {
   res.json({ ok: true });
 });
 
-/* ================= ФРОНТЕНД ================= */
-/* Любой GET (кроме /api/*) → отдаём index.html из корня */
+// ВАЖНО: сначала отдаём файлы из public (css, js, картинки), если они есть,
+// НО index.html отдаём ТОЛЬКО из корня.
+app.use((req, res, next) => {
+  if (req.path === "/" || req.path === "/index.html" || !req.path.includes(".")) {
+    return next();
+  }
+  express.static(ROOT)(req, res, next);
+});
+
+// Отдаём index.html из КОРНЯ на любой GET-запрос
 app.get("*", (req, res) => {
   if (req.path.startsWith("/api/")) {
     return res.status(404).json({ error: "Not found" });
   }
   if (!fs.existsSync(INDEX_FILE)) {
-    return res.status(500).send("index.html не найден в корне проекта. Проверь, что файл лежит рядом с server.js.");
+    return res.status(500).send("index.html не найден в корне проекта.");
   }
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
   res.set("Pragma", "no-cache");
@@ -202,6 +191,5 @@ app.get("*", (req, res) => {
   res.sendFile(INDEX_FILE);
 });
 
-/* ================= START ================= */
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log("Server running on port " + port));
