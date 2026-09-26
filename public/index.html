@@ -39,7 +39,7 @@
     </div>
   </div>
 
-  <!-- Окно авторизации без логотипа -->
+  <!-- Окно авторизации -->
   <div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
     <div class="apple-card rounded-3xl p-8 w-full max-w-md shadow-2xl relative flex flex-col items-center text-center">
       
@@ -103,7 +103,7 @@
       </div>
 
       <div class="p-4 border-t border-white/10 bg-white/5 flex gap-2">
-        <input id="message-input" type="text" placeholder="Ваше сообщение..." class="flex-1 px-4 py-2.5 rounded-full border border-white/10 bg-white/10 focus:outline-none focus:border-blue-500 text-sm text-white">
+        <input id="message-input" type="text" placeholder="Ваше сообщение..." class="flex-1 px-4 py-2.5 rounded-full border border-white/10 bg-white/10 focus:outline-none focus:border-blue-500 text-sm text-white" onkeypress="if(event.key === 'Enter') sendMessage()">
         <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-full text-sm font-medium transition">Отправить</button>
       </div>
     </div>
@@ -192,11 +192,12 @@
       socket.emit('register_socket', myId);
     }
 
-    async function startChat() {
-      const targetId = document.getElementById('target-id').value.trim();
+    async function startChat(targetCustomId = null) {
+      const targetId = targetCustomId || document.getElementById('target-id').value.trim();
       if (!targetId || targetId === myId) return alert('Введите корректный ID собеседника');
       
       currentChatId = targetId;
+      document.getElementById('target-id').value = currentChatId;
       document.getElementById('active-chat-id').innerText = currentChatId;
 
       const res = await fetch(`/api/messages/${myId}/${currentChatId}`);
@@ -212,7 +213,7 @@
     function sendMessage() {
       const input = document.getElementById('message-input');
       const text = input.value.trim();
-      if (!text || !currentChatId) return;
+      if (!text || !currentChatId) return alert('Выберите собеседника и введите текст');
 
       socket.emit('send_message', {
         sender_id: myId,
@@ -223,17 +224,21 @@
       input.value = '';
     }
 
+    // Подтверждение отправки сообщения отправителю
     socket.on('message_sent', (msg) => {
       if (msg.receiver_id === currentChatId || msg.sender_id === currentChatId) {
         addMessageToUI(msg);
       }
     });
 
-    socket.on('receive_message', (msg) => {
-      if (msg.sender_id === currentChatId) {
+    // Автоматический прием сообщения у получателя
+    socket.on('receive_message', async (msg) => {
+      // Если уже открыт чат с этим отправителем
+      if (currentChatId === msg.sender_id) {
         addMessageToUI(msg);
       } else {
-        alert(`Новое сообщение от ID: ${msg.sender_id}`);
+        // Если чат не был открыт — автоматически переключаем на отправителя
+        await startChat(msg.sender_id);
       }
     });
 
