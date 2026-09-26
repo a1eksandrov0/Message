@@ -1,511 +1,69 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Message</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background-color: #000000;
-      color: #f5f5f7;
-      -webkit-font-smoothing: antialiased;
-    }
+function showAuthModal() {
+  document.getElementById('auth-modal').classList.remove('hidden');
+  clearError();
+}
 
-    .apple-card {
-      background: #1c1c1e;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+function hideAuthModal() {
+  document.getElementById('auth-modal').classList.add('hidden');
+}
 
-    /* Анимированный переливающийся градиент Apple для фона авторизации */
-    @keyframes imessageBgGradient {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+function validateEnglishPassword(password) {
+  return /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(password);
+}
 
-    .imessage-animated-bg {
-      background: linear-gradient(-45deg, #000000, #0a192f, #003366, #007aff, #001f3f, #000000);
-      background-size: 400% 400%;
-      animation: imessageBgGradient 12s ease infinite;
-    }
+// Создание аккаунта при нажатии на ссылку "Создание Аккаунта Message"
+async function register() {
+  clearError();
+  const password = document.getElementById('auth-password').value.trim();
 
-    /* Эффект жидкого стекла (Liquid Glass) для плашек ID */
-    .glass-badge {
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 12px;
-      padding: 4px 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-weight: 700;
-      font-size: 0.875rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
+  if (!password) {
+    return showError('Задайте пароль перед созданием аккаунта');
+  }
+  if (!validateEnglishPassword(password)) {
+    return showError('Пароль должен содержать только английские буквы и символы');
+  }
 
-    /* Синее жидкое стекло (Мой ID) */
-    .glass-blue {
-      background: linear-gradient(135deg, rgba(0, 122, 255, 0.4), rgba(0, 86, 198, 0.2));
-      border: 1px solid rgba(0, 122, 255, 0.5);
-      color: #38bdf8;
-      box-shadow: 0 0 12px rgba(0, 122, 255, 0.25);
-    }
-
-    /* Зелёное жидкое стекло (Онлайн) */
-    .glass-green {
-      background: linear-gradient(135deg, rgba(52, 199, 89, 0.35), rgba(40, 156, 68, 0.15));
-      border: 1px solid rgba(52, 199, 89, 0.5);
-      color: #4ade80;
-      box-shadow: 0 0 12px rgba(52, 199, 89, 0.25);
-    }
-
-    /* Серое жидкое стекло (Офлайн) */
-    .glass-gray {
-      background: linear-gradient(135deg, rgba(142, 142, 147, 0.25), rgba(99, 99, 102, 0.1));
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #9ca3af;
-    }
-
-    /* Классический синий цвет iMessage */
-    .imessage-blue {
-      background-color: #007aff;
-      color: #ffffff;
-    }
-
-    /* Серый баббл для входящих сообщений */
-    .imessage-gray {
-      background-color: #26252a;
-      color: #ffffff;
-    }
-
-    ::-webkit-scrollbar {
-      width: 5px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body class="h-screen flex items-center justify-center p-4 overflow-hidden relative select-none">
-
-  <!-- Главный экран авторизации -->
-  <div id="landing-screen" class="fixed inset-0 imessage-animated-bg flex flex-col items-center justify-center z-10 p-4">
-    <div class="flex flex-col items-center justify-center max-w-xl text-center space-y-4">
-      <h1 class="text-7xl md:text-8xl font-bold tracking-tight text-white leading-none drop-shadow-lg">Message</h1>
-
-      <button onclick="showAuthModal()" class="bg-white hover:bg-gray-200 text-black font-semibold text-lg px-9 py-3 rounded-full transition duration-200 shadow-2xl cursor-pointer">
-        Авторизация
-      </button>
-
-      <p class="text-xl md:text-2xl font-medium text-gray-300 tracking-tight drop-shadow">
-        Сервис экспресс-сообщений.
-      </p>
-    </div>
-  </div>
-
-  <!-- Окно авторизации -->
-  <div id="auth-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
-    <div class="apple-card rounded-3xl p-8 w-full max-w-md shadow-2xl relative flex flex-col items-center text-center">
-      <button onclick="hideAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">✕</button>
-
-      <h2 class="text-2xl font-semibold mb-6 mt-2">Вход с Аккаунтом Message</h2>
-
-      <div id="auth-error" class="text-red-400 text-sm mb-4 hidden w-full text-center px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20"></div>
-
-      <div class="space-y-4 w-full">
-        <input id="auth-id" type="text" maxlength="6" placeholder="ID (для входа)" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff] font-mono">
-        <input id="auth-password" type="password" placeholder="Пароль" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#007aff]">
-
-        <div class="pt-2 flex gap-3">
-          <button onclick="login()" class="flex-1 bg-[#007aff] hover:bg-blue-600 text-white font-medium py-3 rounded-xl transition">Продолжить</button>
-          <button onclick="register()" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl transition">Создать ID</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Экран Мессенджера -->
-  <div id="chat-screen" class="apple-card rounded-3xl w-full max-w-5xl h-[85vh] shadow-2xl flex hidden overflow-hidden">
-    <!-- Боковая панель -->
-    <div class="w-1/3 border-r border-white/10 p-4 flex flex-col justify-between bg-[#121214]">
-      <div class="flex flex-col h-full overflow-hidden">
-        
-        <!-- Плашка Мой ID -->
-        <div class="flex items-center gap-2 mb-4 flex-shrink-0">
-          <span class="text-xs font-semibold text-gray-400 tracking-wider uppercase">МОЙ ID:</span>
-          <span id="my-id-display" class="glass-badge glass-blue">------</span>
-        </div>
-        
-        <h2 class="text-3xl font-bold text-white mb-4 flex-shrink-0 tracking-tight">Message</h2>
-        
-        <!-- Поле "Поиск ID" -->
-        <div class="space-y-2.5 mb-4 flex-shrink-0">
-          <input id="target-id" type="text" maxlength="6" placeholder="Поиск ID" class="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm focus:outline-none focus:border-[#007aff] font-mono text-white placeholder-gray-500">
-          <button onclick="handleManualStartChat()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white text-sm py-2.5 rounded-xl transition font-medium">Открыть чат</button>
-        </div>
-
-        <!-- Список диалогов -->
-        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex-shrink-0">Диалоги</div>
-        <div id="recent-chats-list" class="flex-1 overflow-y-auto space-y-1.5 pr-1">
-          <!-- Динамический список диалогов -->
-        </div>
-      </div>
-
-      <button onclick="location.reload()" class="text-red-400 hover:text-red-300 text-sm font-medium text-left transition pt-3 flex-shrink-0 border-t border-white/10">Выйти</button>
-    </div>
-
-    <!-- Область диалога -->
-    <div class="w-2/3 flex flex-col justify-between bg-black">
-      <!-- Шапка диалога с рамкой жидкого стекла для собеседника -->
-      <div class="p-4 border-b border-white/10 bg-[#121214] flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-medium text-gray-400">Собеседник:</span>
-          <span id="active-chat-id" class="glass-badge glass-gray">Не выбран</span>
-        </div>
-      </div>
-
-      <div id="messages-container" class="p-4 overflow-y-auto flex-1 space-y-2">
-        <div class="text-center text-gray-500 text-sm mt-10">Выберите диалог слева или введите ID собеседника</div>
-      </div>
-
-      <!-- Поле ввода с надписью "Текстовое сообщение" -->
-      <div class="p-4 border-t border-white/10 bg-[#121214] flex gap-2 items-center">
-        <input id="message-input" type="text" placeholder="Текстовое сообщение" class="flex-1 px-4 py-2.5 rounded-full border border-white/20 bg-white/5 focus:outline-none focus:border-[#007aff] text-sm text-white placeholder-gray-500" onkeypress="if(event.key === 'Enter') sendMessage()">
-        <button onclick="sendMessage()" class="bg-[#007aff] hover:bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium transition flex items-center justify-center">Отправить</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const socket = io();
-    let myId = null;
-    let currentChatId = null;
-    
-    // Активные чаты и множества Онлайн пользователей
-    const activeChats = {};
-    const onlineUsers = new Set();
-
-    function showAuthModal() {
-      document.getElementById('auth-modal').classList.remove('hidden');
-      clearError();
-    }
-
-    function hideAuthModal() {
-      document.getElementById('auth-modal').classList.add('hidden');
-    }
-
-    function validateEnglishPassword(password) {
-      return /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(password);
-    }
-
-    async function register() {
-      clearError();
-      const password = document.getElementById('auth-password').value;
-      if (!password) return showError('Введите пароль');
-      if (!validateEnglishPassword(password)) {
-        return showError('Пароль должен содержать только английские буквы и символы');
-      }
-
-      try {
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password })
-        });
-        const data = await res.json();
-        if (data.error) return showError(data.error);
-
-        myId = data.id;
-        alert(`Ваш ID: ${myId}`);
-        await openChatScreen();
-      } catch (e) {
-        showError('Ошибка соединения');
-      }
-    }
-
-    async function login() {
-      clearError();
-      const id = document.getElementById('auth-id').value.trim();
-      const password = document.getElementById('auth-password').value;
-
-      if (!id || !password) return showError('Заполните все поля');
-
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, password })
-        });
-        const data = await res.json();
-        if (data.error) return showError(data.error);
-
-        myId = data.id;
-        await openChatScreen();
-      } catch (e) {
-        showError('Ошибка соединения');
-      }
-    }
-
-    async function openChatScreen() {
-      document.getElementById('landing-screen').classList.add('hidden');
-      document.getElementById('auth-modal').classList.add('hidden');
-      document.getElementById('chat-screen').classList.remove('hidden');
-      document.getElementById('my-id-display').innerText = myId;
-      
-      socket.emit('register_socket', myId);
-      await loadChatList();
-    }
-
-    async function loadChatList() {
-      try {
-        const res = await fetch(`/api/messages/${myId}/all`);
-        const messages = await res.json();
-
-        if (Array.isArray(messages)) {
-          messages.forEach(msg => {
-            const partnerId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
-            if (!activeChats[partnerId]) {
-              activeChats[partnerId] = { unread: false, lastText: msg.text };
-            } else {
-              activeChats[partnerId].lastText = msg.text;
-            }
-          });
-          renderRecentChatsList();
-        }
-      } catch (e) {
-        console.error('Ошибка загрузки историй:', e);
-      }
-    }
-
-    function handleManualStartChat() {
-      const targetId = document.getElementById('target-id').value.trim();
-      if (!targetId || targetId === myId) return alert('Введите корректный ID собеседника');
-      
-      openChatWith(targetId);
-      document.getElementById('target-id').value = '';
-    }
-
-    async function openChatWith(targetId) {
-      currentChatId = targetId;
-      
-      // Сбрасываем плашку с не прочитанным кружком
-      if (!activeChats[targetId]) {
-        activeChats[targetId] = { unread: false, lastText: '' };
-      } else {
-        activeChats[targetId].unread = false;
-      }
-
-      updatePartnerBadgeStatus();
-      renderRecentChatsList();
-
-      const res = await fetch(`/api/messages/${myId}/${currentChatId}`);
-      const messages = await res.json();
-
-      renderMessages(messages || []);
-    }
-
-    // Обновление плашки жидкого стекла (Зелёная - Онлайн / Серая - Офлайн)
-    function updatePartnerBadgeStatus() {
-      const badge = document.getElementById('active-chat-id');
-      if (!currentChatId) {
-        badge.innerText = 'Не выбран';
-        badge.className = 'glass-badge glass-gray';
-        return;
-      }
-
-      badge.innerText = currentChatId;
-      const isOnline = onlineUsers.has(currentChatId);
-
-      if (isOnline) {
-        badge.className = 'glass-badge glass-green';
-      } else {
-        badge.className = 'glass-badge glass-gray';
-      }
-    }
-
-    // Отрисовка списка диалогов с восстановленным СИНИМ КРУЖКОМ
-    function renderRecentChatsList() {
-      const listContainer = document.getElementById('recent-chats-list');
-      listContainer.innerHTML = '';
-
-      Object.keys(activeChats).forEach(chatId => {
-        const chatData = activeChats[chatId];
-        const isActive = chatId === currentChatId;
-
-        const chatItem = document.createElement('div');
-        chatItem.onclick = () => openChatWith(chatId);
-        chatItem.className = `p-3 rounded-xl transition cursor-pointer flex items-center justify-between ${
-          isActive 
-            ? 'bg-white/15 text-white' 
-            : 'hover:bg-white/5 text-gray-300'
-        }`;
-
-        // КРУЖОК НЕПРОЧИТАННОГО СООБЩЕНИЯ (#007aff)
-        const unreadDot = chatData.unread 
-          ? `<span class="w-2.5 h-2.5 rounded-full bg-[#007aff] flex-shrink-0 shadow-[0_0_8px_#007aff]"></span>` 
-          : `<span class="w-2.5 h-2.5 invisible flex-shrink-0"></span>`;
-
-        chatItem.innerHTML = `
-          <div class="flex items-center gap-2.5 overflow-hidden w-full">
-            ${unreadDot}
-            <div class="overflow-hidden flex-1">
-              <div class="font-mono font-bold text-sm text-white leading-tight">
-                ${chatId}
-              </div>
-              <div class="text-xs text-gray-400 truncate mt-0.5">
-                ${chatData.lastText || 'Сообщение'}
-              </div>
-            </div>
-          </div>
-        `;
-
-        listContainer.appendChild(chatItem);
-      });
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('message-input');
-      const text = input.value.trim();
-      if (!text || !currentChatId) return alert('Выберите собеседника');
-
-      socket.emit('send_message', {
-        sender_id: myId,
-        receiver_id: currentChatId,
-        text: text
-      });
-
-      input.value = '';
-    }
-
-    // Сервер сообщает список онлайн при входе
-    socket.on('initial_online_list', (list) => {
-      list.forEach(id => onlineUsers.add(id));
-      if (currentChatId) {
-        updatePartnerBadgeStatus();
-        renderMessagesCurrentChat();
-      }
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
     });
+    const data = await res.json();
 
-    // Обработка подключения/отключения пользователей
-    socket.on('user_online_status', ({ userId, isOnline }) => {
-      if (isOnline) {
-        onlineUsers.add(userId);
-      } else {
-        onlineUsers.delete(userId);
-      }
+    if (data.error) return showError(data.error);
 
-      if (userId === currentChatId) {
-        updatePartnerBadgeStatus();
-        renderMessagesCurrentChat();
-      }
+    myId = data.id;
+    alert(`Ваш новый ID Message: ${myId}`);
+    await openChatScreen();
+  } catch (e) {
+    showError('Ошибка соединения с сервером');
+  }
+}
+
+// Вход по кнопке "Продолжить"
+async function login() {
+  clearError();
+  const id = document.getElementById('auth-id').value.trim();
+  const password = document.getElementById('auth-password').value.trim();
+
+  if (!id || !password) {
+    return showError('Введите ваш ID и пароль');
+  }
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, password })
     });
+    const data = await res.json();
 
-    socket.on('message_sent', (msg) => {
-      const targetId = msg.receiver_id;
-      if (!activeChats[targetId]) {
-        activeChats[targetId] = { unread: false, lastText: msg.text };
-      } else {
-        activeChats[targetId].lastText = msg.text;
-      }
+    if (data.error) return showError(data.error);
 
-      if (targetId === currentChatId) {
-        const isPartnerOnline = onlineUsers.has(targetId);
-        addSingleMessageUI(msg, true, isPartnerOnline ? 'Прочитано' : 'Доставлено');
-      }
-      
-      renderRecentChatsList();
-    });
-
-    socket.on('receive_message', (msg) => {
-      const senderId = msg.sender_id;
-
-      if (!activeChats[senderId]) {
-        activeChats[senderId] = { unread: false, lastText: msg.text };
-      }
-
-      activeChats[senderId].lastText = msg.text;
-
-      if (currentChatId === senderId) {
-        addSingleMessageUI(msg, false);
-      } else {
-        // Если чат не активен прямо сейчас, ВКЛЮЧАЕМ СИНИЙ КРУЖОК
-        activeChats[senderId].unread = true;
-      }
-
-      renderRecentChatsList();
-    });
-
-    async function renderMessagesCurrentChat() {
-      if (!currentChatId) return;
-      const res = await fetch(`/api/messages/${myId}/${currentChatId}`);
-      const messages = await res.json();
-      renderMessages(messages || []);
-    }
-
-    function renderMessages(messages) {
-      const container = document.getElementById('messages-container');
-      container.innerHTML = '';
-
-      const isPartnerOnline = onlineUsers.has(currentChatId);
-
-      messages.forEach((msg, index) => {
-        const isMe = msg.sender_id === myId;
-        const isLast = index === messages.length - 1;
-        
-        // Статус ("Прочитано" если онлайне, иначе "Доставлено")
-        const status = (isMe && isLast) ? (isPartnerOnline ? 'Прочитано' : 'Доставлено') : null;
-        addSingleMessageUI(msg, isMe, status);
-      });
-    }
-
-    function addSingleMessageUI(msg, isMe, statusText = null) {
-      const container = document.getElementById('messages-container');
-
-      // Удаляем предыдущие текстовые метки статусов
-      const oldStatuses = container.querySelectorAll('.status-label');
-      oldStatuses.forEach(el => el.remove());
-
-      const wrapper = document.createElement('div');
-      wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
-
-      const bubble = document.createElement('div');
-      bubble.className = `max-w-[70%] px-4 py-2 rounded-2xl text-[15px] leading-snug ${
-        isMe 
-          ? 'imessage-blue rounded-br-sm' 
-          : 'imessage-gray rounded-bl-sm'
-      }`;
-      bubble.innerText = msg.text;
-
-      wrapper.appendChild(bubble);
-
-      if (statusText && isMe) {
-        const status = document.createElement('span');
-        status.className = 'status-label text-[10px] text-gray-500 mt-1 mr-1 font-medium';
-        status.innerText = statusText;
-        wrapper.appendChild(status);
-      }
-
-      container.appendChild(wrapper);
-      container.scrollTop = container.scrollHeight;
-    }
-
-    function showError(msg) {
-      const err = document.getElementById('auth-error');
-      err.innerText = msg;
-      err.classList.remove('hidden');
-    }
-
-    function clearError() {
-      const err = document.getElementById('auth-error');
-      err.innerText = '';
-      err.classList.add('hidden');
-    }
-  </script>
-</body>
-</html>
+    myId = data.id;
+    await openChatScreen();
+  } catch (e) {
+    showError('Ошибка соединения с сервером');
+  }
+}
