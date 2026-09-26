@@ -5,13 +5,16 @@ const crypto = require("crypto");
 
 const app = express();
 app.use(express.json());
-app.use(express.static(__dirname));
 
 const DB_FILE = path.join(__dirname, "users.json");
 
 function loadUsers() {
   if (!fs.existsSync(DB_FILE)) return {};
-  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+  } catch {
+    return {};
+  }
 }
 
 function saveUsers(users) {
@@ -22,7 +25,8 @@ function hash(password) {
   return crypto.createHash("sha256").update(password).digest("hex");
 }
 
-// Генерация ID
+// --- API ---
+
 app.get("/api/generate-id", (req, res) => {
   const users = loadUsers();
   let id;
@@ -32,7 +36,6 @@ app.get("/api/generate-id", (req, res) => {
   res.json({ id });
 });
 
-// Регистрация
 app.post("/api/register", (req, res) => {
   const { id, password } = req.body || {};
   if (!id || !password) {
@@ -50,7 +53,6 @@ app.post("/api/register", (req, res) => {
   res.json({ id });
 });
 
-// Логин
 app.post("/api/login", (req, res) => {
   const { id, password } = req.body || {};
   const users = loadUsers();
@@ -61,6 +63,17 @@ app.post("/api/login", (req, res) => {
   res.json({ id });
 });
 
-app.listen(3000, () => {
-  console.log("Открой в браузере: http://localhost:3000");
+// --- Фронтенд ---
+
+app.use(express.static(__dirname));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// --- Запуск ---
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log("Server running on port " + port);
 });
